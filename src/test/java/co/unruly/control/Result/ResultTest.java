@@ -10,10 +10,13 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static co.unruly.control.Result.Results.*;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.hasItems;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.*;
 
 
@@ -23,14 +26,14 @@ public class ResultTest {
     public void canCreateSuccess() {
         Result<Integer, String> shouldBeSuccess = Result.success(5);
 
-        assertThat(shouldBeSuccess.succeeded(), is(true));
+        assertThat(succeeded(shouldBeSuccess), is(true));
     }
 
     @Test
     public void canCreateFailure() {
         Result<Integer, String> shouldBeSuccess = Result.failure("oh poop");
 
-        assertThat(shouldBeSuccess.succeeded(), is(false));
+        assertThat(succeeded(shouldBeSuccess), is(false));
     }
 
     @Test
@@ -56,8 +59,8 @@ public class ResultTest {
 
         Result<Integer, String> success = Result.success(5);
 
-        success.onSuccess(onSuccess);
-        success.onFailure(onFailure);
+        onSuccess(success, onSuccess);
+        onFailure(success, onFailure);
 
         verify(onSuccess).accept(5);
         verifyZeroInteractions(onFailure);
@@ -68,10 +71,10 @@ public class ResultTest {
         final Consumer<Integer> onSuccess = mock(Consumer.class);
         final Consumer<String> onFailure = mock(Consumer.class);
 
-        Result<Integer, String> success = Result.failure("oops");
+        Result<Integer, String> failure = Result.failure("oops");
 
-        success.onSuccess(onSuccess);
-        success.onFailure(onFailure);
+        onSuccess(failure, onSuccess);
+        onFailure(failure, onFailure);
 
         verify(onFailure).accept("oops");
         verifyZeroInteractions(onSuccess);
@@ -86,9 +89,9 @@ public class ResultTest {
         final Result<Integer, String> five = Result.success(5);
         final Result<Integer, String> failure = Result.failure("Cannot parse number");
 
-        assertThat(six.flatMap(halve), Is.is(Result.success(3)));
-        assertThat(five.flatMap(halve), Is.is(Result.failure("Cannot halve an odd number into an integer")));
-        assertThat(failure.flatMap(halve), Is.is(Result.failure("Cannot parse number")));
+        assertThat(flatMap(six, halve), Is.is(Result.success(3)));
+        assertThat(flatMap(five, halve), Is.is(Result.failure("Cannot halve an odd number into an integer")));
+        assertThat(flatMap(failure, halve), Is.is(Result.failure("Cannot parse number")));
     }
 
     @Test
@@ -96,8 +99,8 @@ public class ResultTest {
         final Result<Integer, String> six = Result.success(6);
         final Result<Integer, String> failure = Result.failure("Cannot parse number");
 
-        final Result<Integer, String> twelve = six.map(x -> x * 2);
-        final Result<Integer, String> stillFailure = failure.map(x -> x * 2);
+        final Result<Integer, String> twelve = map(six, x -> x * 2);
+        final Result<Integer, String> stillFailure = map(failure, x -> x * 2);
 
         assertThat(twelve, Is.is(Result.success(12)));
         assertThat(stillFailure, is(failure));
@@ -108,8 +111,8 @@ public class ResultTest {
         final Result<Integer, String> six = Result.success(6);
         final Result<Integer, String> failure = Result.failure("Cannot parse number");
 
-        final Result<Integer, String> stillSix = six.mapFailures(String::toLowerCase);
-        final Result<Integer, String> lowerCaseFailure = failure.mapFailures(String::toLowerCase);
+        final Result<Integer, String> stillSix = mapFailures(six, String::toLowerCase);
+        final Result<Integer, String> lowerCaseFailure = mapFailures(failure, String::toLowerCase);
 
         assertThat(stillSix, Is.is(Result.success(6)));
         assertThat(lowerCaseFailure, Is.is(Result.failure("cannot parse number")));
@@ -120,8 +123,8 @@ public class ResultTest {
         Result<String, String> six = Result.success("6");
         Result<String, String> notANumber = Result.success("NaN");
 
-        Result<Long, String> parsedSix = six.tryMap(Long::parseLong, Throwable::toString);
-        Result<Long, String> parsedNaN = notANumber.tryMap(Long::parseLong, Throwable::toString);
+        Result<Long, String> parsedSix = tryMap(six, Long::parseLong, Throwable::toString);
+        Result<Long, String> parsedNaN = tryMap(notANumber, Long::parseLong, Throwable::toString);
 
         assertThat(parsedSix, Is.is(Result.success(6L)));
         assertThat(parsedNaN, Is.is(Result.failure("java.lang.NumberFormatException: For input string: \"NaN\"")));
@@ -131,7 +134,7 @@ public class ResultTest {
     public void canStreamSuccesses() {
         Stream<Result<Integer, String>> results = Stream.of(Result.success(6), Result.success(5), Result.failure("darnit"));
 
-        List<Integer> successes = results.flatMap(Result::successes).collect(toList());
+        List<Integer> successes = results.flatMap(Results::successes).collect(toList());
 
         assertThat(successes, hasItems(6, 5));
     }
@@ -140,7 +143,7 @@ public class ResultTest {
     public void canStreamFailures() {
         Stream<Result<Integer, String>> results = Stream.of(Result.success(6), Result.success(5), Result.failure("darnit"));
 
-        List<String> failures = results.flatMap(Result::failures).collect(toList());
+        List<String> failures = results.flatMap(Results::failures).collect(toList());
 
         assertThat(failures, hasItems("darnit"));
     }
@@ -152,10 +155,10 @@ public class ResultTest {
         Consumer<String> failureCallback = mock(Consumer.class);
 
         List<Long> halvedNumbers = inputs.map(Result::<String, String>success)
-              .map(str -> str.tryMap(Long::parseLong, Throwable::toString))
-              .map(num -> num.flatMap(x -> x % 2 == 0 ? Result.success(x/2) : Result.failure(x + " is odd")))
-              .peek(num -> num.onFailure(failureCallback))
-              .flatMap(Result::successes)
+              .map(str -> tryMap(str, Long::parseLong, Throwable::toString))
+              .map(num -> flatMap(num, x -> x % 2 == 0 ? Result.success(x/2) : Result.failure(x + " is odd")))
+              .peek(num -> onFailure(num, failureCallback))
+              .flatMap(Results::successes)
               .collect(Collectors.toList());
 
         assertThat(halvedNumbers, hasItems(3L));
@@ -172,9 +175,8 @@ public class ResultTest {
         Consumer<String> failureCallback = mock(Consumer.class);
 
         Pair<List<Long>, List<String>> halvedNumbers = inputs.map(Result::<String, String>success)
-                .map(str -> str.tryMap(Long::parseLong, Throwable::toString))
-                .map(num -> num.flatMap(x -> x % 2 == 0 ? Result.success(x/2) : Result.failure(x + " is odd")))
-                .peek(num -> num.onFailure(failureCallback))
+                .map(str -> tryMap(str, Long::parseLong, Throwable::toString))
+                .map(num -> flatMap(num, x -> x % 2 == 0 ? Result.success(x/2) : Result.failure(x + " is odd")))
                 .collect(new ResultSplitter<>());
 
         assertThat(halvedNumbers.left, hasItems(3L));
