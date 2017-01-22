@@ -5,7 +5,6 @@ import co.unruly.control.LinkList.LinkLists;
 import co.unruly.control.LinkList.NonEmptyList;
 import co.unruly.control.Pair;
 import co.unruly.control.Result.Result;
-import co.unruly.control.Result.ResultSplitter;
 import co.unruly.control.Result.Results;
 import org.junit.Test;
 
@@ -22,6 +21,7 @@ import static co.unruly.control.LinkList.LinkLists.nonEmptyList;
 import static co.unruly.control.LinkList.NonEmptyList.cons;
 import static co.unruly.control.Result.Results.onFailure;
 import static co.unruly.control.Result.Results.onSuccess;
+import static co.unruly.control.Result.Results.split;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.hasItems;
@@ -294,7 +294,7 @@ public class ValidatorTest {
         Pair<List<Integer>, List<FailedValidation<Integer, String>>> results = Stream
                 .of(4,5,6,7,8)
                 .map(isPrime)
-                .collect(new ResultSplitter<>());
+                .collect(split());
 
         assertThat(results.left, hasItems(5, 7));
         assertThat(results.right, hasItems(

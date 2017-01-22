@@ -13,10 +13,8 @@ import java.util.stream.Stream;
 import static co.unruly.control.Result.Results.*;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.hasItems;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.*;
 
 
@@ -172,12 +170,11 @@ public class ResultTest {
     @SuppressWarnings("unchecked")
     public void exampleSplitResults() {
         Stream<String> inputs = Stream.of("6", "5", "NaN");
-        Consumer<String> failureCallback = mock(Consumer.class);
 
         Pair<List<Long>, List<String>> halvedNumbers = inputs.map(Result::<String, String>success)
                 .map(str -> tryMap(str, Long::parseLong, Throwable::toString))
                 .map(num -> flatMap(num, x -> x % 2 == 0 ? Result.success(x/2) : Result.failure(x + " is odd")))
-                .collect(new ResultSplitter<>());
+                .collect(Results.split());
 
         assertThat(halvedNumbers.left, hasItems(3L));
         assertThat(halvedNumbers.right, hasItems("java.lang.NumberFormatException: For input string: \"NaN\"", "5 is odd"));

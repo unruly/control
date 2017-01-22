@@ -1,9 +1,12 @@
 package co.unruly.control.Result;
 
+import co.unruly.control.Pair;
 import co.unruly.control.Unit;
 
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collector;
 import java.util.stream.Stream;
 
 import static co.unruly.control.Result.Result.failure;
@@ -51,4 +54,7 @@ public final class Results {
         return result.either(__ -> true, __ -> false);
     }
 
+    public static <S, F> Collector<Result<S, F>, Pair<List<S>, List<F>>, Pair<List<S>, List<F>>> split() {
+        return new ResultSplitter<>();
+    }
 }

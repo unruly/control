@@ -17,13 +17,11 @@ import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.toList;
 
 
-public class ResultSplitter<L, R>
+class ResultSplitter<L, R>
         implements Collector<
         Result<L, R>,
         Pair<List<L>, List<R>>,
         Pair<List<L>, List<R>>> {
-
-
 
     @Override
     public Supplier<Pair<List<L>, List<R>>> supplier() {
