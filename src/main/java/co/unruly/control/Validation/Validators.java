@@ -2,10 +2,12 @@ package co.unruly.control.Validation;
 
 
 import co.unruly.control.Optionals;
+import co.unruly.control.ThrowingLambdas;
 
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -60,6 +62,16 @@ public class Validators {
 
     public static <T, T1, E> Validator<T, E> onEach(Function<T, Iterable<T1>> iterator, Validator<T1, E> innerValidator) {
         return t -> StreamSupport.stream(iterator.apply(t).spliterator(), false).flatMap(innerValidator::validate);
+    }
+
+    public static <T, E> Validator<T, E> tryTo(Validator<T, E> validatorWhichThrowsRuntimeExceptions, Function<RuntimeException, E> errorMapper) {
+        return t -> {
+            try {
+                return validatorWhichThrowsRuntimeExceptions.validate(t);
+            } catch (RuntimeException ex) {
+                return Stream.of(errorMapper.apply(ex));
+            }
+        };
     }
 
 }

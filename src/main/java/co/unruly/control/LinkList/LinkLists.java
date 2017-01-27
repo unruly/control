@@ -1,11 +1,9 @@
 package co.unruly.control.LinkList;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
@@ -72,6 +70,10 @@ public class LinkLists {
 
     public static <T> T reduce(NonEmptyList<T> list, BiFunction<T, T, T> combiner) {
         return reduce(list.rest, combiner, list.first);
+    }
+
+    public static <T> Collector<T, Deque<T>, LinkList<T>> toLinkList() {
+        return new LinkListCollector<>();
     }
 
     public static boolean listsEqual(LinkList<?> first, LinkList<?> second) {

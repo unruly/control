@@ -18,6 +18,10 @@ public enum Unit {
         };
     }
 
+    public static <T> Consumer<T> voidify(Function<T, ?> function) {
+        return function::apply;
+    }
+
     public static <T> Unit noOp(T _) {
         return UNIT;
     }

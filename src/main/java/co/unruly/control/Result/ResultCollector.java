@@ -17,7 +17,7 @@ import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.toList;
 
 
-class ResultSplitter<L, R>
+class ResultCollector<L, R>
         implements Collector<
         Result<L, R>,
         Pair<List<L>, List<R>>,

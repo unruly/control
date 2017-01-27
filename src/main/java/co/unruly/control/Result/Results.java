@@ -55,6 +55,6 @@ public final class Results {
     }
 
     public static <S, F> Collector<Result<S, F>, Pair<List<S>, List<F>>, Pair<List<S>, List<F>>> split() {
-        return new ResultSplitter<>();
+        return new ResultCollector<>();
     }
 }

@@ -6,6 +6,7 @@ import co.unruly.control.LinkList.NonEmptyList;
 import co.unruly.control.Pair;
 import co.unruly.control.Result.Result;
 import co.unruly.control.Result.Results;
+import co.unruly.control.ThrowingLambdas;
 import org.junit.Test;
 
 import java.util.List;
@@ -19,9 +20,7 @@ import java.util.stream.Stream;
 import static co.unruly.control.LinkList.LinkLists.lazyMap;
 import static co.unruly.control.LinkList.LinkLists.nonEmptyList;
 import static co.unruly.control.LinkList.NonEmptyList.cons;
-import static co.unruly.control.Result.Results.onFailure;
-import static co.unruly.control.Result.Results.onSuccess;
-import static co.unruly.control.Result.Results.split;
+import static co.unruly.control.Result.Results.*;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.hasItems;
@@ -302,6 +301,24 @@ public class ValidatorTest {
                 validationFailure(6, "6 divides by 2", "6 divides by 3"),
                 validationFailure(8, "8 divides by 2")
                 ));
+    }
+
+    @Test
+    public void blammo() {
+        safelyDoSomethingDodgy(x -> { throw new Exception("hello"); }, "cheese");
+    }
+
+    private static void safelyDoSomethingDodgy(ThrowingLambdas.ThrowingConsumer<String, Exception> consumer, String message) {
+        try {
+            consumer.accept(message);
+        } catch (Exception ex) {
+            // do nothing cos that's how I roll
+
+        }
+    }
+
+    private static void doSomethingDodgy(String message) throws Exception {
+        throw new Exception(message);
     }
 
     private static Predicate<Integer> divisibleBy(int factor) {
