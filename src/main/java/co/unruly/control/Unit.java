@@ -22,7 +22,7 @@ public enum Unit {
         return function::apply;
     }
 
-    public static <T> Unit noOp(T _) {
+    public static <T> Unit noOp(T __) {
         return UNIT;
     }
 }
