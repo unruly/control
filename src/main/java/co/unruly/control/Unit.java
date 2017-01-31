@@ -5,7 +5,7 @@ import java.util.function.Function;
 
 /**
  * Unit type, which contains only one possible value.
- *
+ * <p>
  * This exists to offer a bridge between void and regular functions, providing
  * convenience methods to convert between them.
  */

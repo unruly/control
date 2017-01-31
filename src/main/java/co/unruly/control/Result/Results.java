@@ -48,7 +48,7 @@ public final class Results {
      * whichever wrapped value is present.
      *
      * @param result A Result
-     * @param <T> The type of both success and failure values for that Result
+     * @param <T>    The type of both success and failure values for that Result
      * @return The success or failure value from the Result
      */
     public static <T> T collapse(Result<T, T> result) {

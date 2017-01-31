@@ -7,7 +7,7 @@ import java.util.function.Function;
  * Represents the result of an operation which could fail, represented as either
  * a Success (wrapping the successful output) or a Failure (wrapping a value
  * describing how it failed).
- *
+ * <p>
  * The interface for Result is minimal: many common operations are implemented
  * with static methods in Results.
  *
@@ -34,7 +34,7 @@ public abstract class Result<S, F>  {
      *
      * @param onSuccess the function to process the success value, if this is a Success
      * @param onFailure the function to process the failure value, if this is a Failure
-     * @param <R> the type of the end result
+     * @param <R>       the type of the end result
      * @return The result of executing onSuccess if this result is a Success, or onFailure if it's a failure
      */
     public abstract <R> R either(Function<S, R> onSuccess, Function<F, R> onFailure);
