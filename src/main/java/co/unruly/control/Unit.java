@@ -3,10 +3,12 @@ package co.unruly.control;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-// Unit type, which contains only one possible first, with some handy functions to convert void methods to functions
-// returning Unit for functional interface compatibility.
-//
-// Basically java.lang.Void but it doesn't make my eyes bleed
+/**
+ * Unit type, which contains only one possible value.
+ *
+ * This exists to offer a bridge between void and regular functions, providing
+ * convenience methods to convert between them.
+ */
 public enum Unit {
 
     UNIT;
@@ -24,5 +26,9 @@ public enum Unit {
 
     public static <T> Unit noOp(T __) {
         return UNIT;
+    }
+
+    public static <T> void noOpConsumer(T __) {
+        // do nothing
     }
 }

@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 
 import static co.unruly.control.Result.Result.failure;
 import static co.unruly.control.Result.Result.success;
+import static java.util.function.Function.identity;
 
 public final class Results {
 
@@ -40,6 +41,18 @@ public final class Results {
 
     public static <S, S1, F> Result<S1, F> flatMap(Result<S, F> result, Function<S, Result<S1, F>> f) {
         return result.either(f, Result::failure);
+    }
+
+    /**
+     * Takes a result where both success and failure types are the same, and returns
+     * whichever wrapped value is present.
+     *
+     * @param result A Result
+     * @param <T> The type of both success and failure values for that Result
+     * @return The success or failure value from the Result
+     */
+    public static <T> T collapse(Result<T, T> result) {
+        return result.either(identity(), identity());
     }
 
     public static <S, S1, F> Result<S1, F> tryMap(Result<S, F> result, Function<S, S1> f, Function<Exception, F> exceptionHandler) {
