@@ -15,7 +15,7 @@ import static co.unruly.control.Result.Result.failure;
 import static co.unruly.control.Unit.functify;
 import static java.util.function.Function.identity;
 
-public class Results2 {
+public class Results {
 
     /*******************************************************
      * Pipeline operations:

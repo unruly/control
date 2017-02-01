@@ -11,7 +11,7 @@ import java.util.stream.Stream;
 
 import static co.unruly.control.Result.Result.failure;
 import static co.unruly.control.Result.Result.success;
-import static co.unruly.control.Result.Results2.*;
+import static co.unruly.control.Result.Results.*;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.core.Is.is;
@@ -19,7 +19,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
 
 
-public class Results2Test {
+public class ResultsTest {
 
     @Test
     public void canCreateSuccess() {
@@ -182,7 +182,7 @@ public class Results2Test {
             startingWith(String.class, String.class)
                 .then(tryTo(map(Long::parseLong), Exception::toString))
                 .then(flatMap(x -> x % 2 == 0 ? success(x / 2) : failure(x + " is odd")))
-        ).collect(Results2.split());
+        ).collect(Results.split());
 
         assertThat(halvedNumbers.left, hasItems(3L));
         assertThat(halvedNumbers.right, hasItems("java.lang.NumberFormatException: For input string: \"NaN\"", "5 is odd"));

@@ -5,7 +5,7 @@ import co.unruly.control.LinkList.LinkLists;
 import co.unruly.control.LinkList.NonEmptyList;
 import co.unruly.control.Pair;
 import co.unruly.control.Result.Result;
-import co.unruly.control.Result.Results2;
+import co.unruly.control.Result.Results;
 import co.unruly.control.ThrowingLambdas;
 import org.junit.Test;
 
@@ -20,7 +20,7 @@ import java.util.stream.Stream;
 import static co.unruly.control.LinkList.LinkLists.lazyMap;
 import static co.unruly.control.LinkList.LinkLists.nonEmptyList;
 import static co.unruly.control.LinkList.NonEmptyList.cons;
-import static co.unruly.control.Result.Results2.*;
+import static co.unruly.control.Result.Results.*;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.hasItems;
@@ -137,7 +137,7 @@ public class ValidatorTest {
 
         List<Integer> evens = Stream.of(1,2,3,4,5,6,7,8,9)
                 .map(isEven)
-                .flatMap(Results2.successes())
+                .flatMap(Results.successes())
                 .collect(toList());
 
         assertThat(evens, hasItems(2,4,6,8));
@@ -149,7 +149,7 @@ public class ValidatorTest {
 
         List<FailedValidation<Integer, String>> odds = Stream.of(1, 2, 3, 4, 5, 6, 7, 8, 9)
                 .map(isEven)
-                .flatMap(Results2.failures())
+                .flatMap(Results.failures())
                 .collect(toList());
 
         assertThat(odds, hasItems(
