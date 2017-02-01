@@ -39,8 +39,8 @@ public abstract class Result<S, F>  {
      */
     public abstract <R> R either(Function<S, R> onSuccess, Function<F, R> onFailure);
 
-    public <S1, F1> Result<S1, F1> andThen(ResultMapper<S, S1, F, F1> biMapper) {
-        return biMapper.biMap(this);
+    public <T> T then(ResultMapper<S, F, T> biMapper) {
+        return biMapper.onResult(this);
     }
 
     private static final class Success<L, R> extends Result<L, R> {
