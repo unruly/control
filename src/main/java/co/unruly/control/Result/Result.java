@@ -9,7 +9,8 @@ import java.util.function.Function;
  * describing how it failed).
  * <p>
  * The interface for Result is minimal: many common operations are implemented
- * with static methods in Results.
+ * with static methods in Results, and these can be composed upon a Result by
+ * passing them as arguments to then().
  *
  * @param <S> The type of a success
  * @param <F> The type of a failure
@@ -39,6 +40,41 @@ public abstract class Result<S, F>  {
      */
     public abstract <R> R either(Function<S, R> onSuccess, Function<F, R> onFailure);
 
+    /**
+     * Applies a ResultMapper (a function taking a Result) to this Result. This permits
+     * inverting the calling convention, so that instead of the following:
+     * <pre>
+     * {@code
+     * Result<Shop, String> shop;
+     * Result<Hat, String> hat = map(shop, Shop::purchaseHat);
+     * }
+     * </pre>
+     * <p>
+     * We can write:
+     * <pre>
+     * {@code
+     * Result<Shop, String> shop;
+     * Result<Hat, String> hat = shop.then(map(Shop::purchaseHat));
+     * }
+     * </pre>
+     * <p>
+     * The advantage of this is that it composes more nicely: instead of this:
+     * <pre>
+     * {@code
+     * Result<Town, String> town;
+     * Result<Hat, String> hat = map(map(shop, Town::findHatShop), Shop::purchaseHat);
+     * }
+     * </pre>
+     * <p>
+     * We can write:
+     * * <pre>
+     * {@code
+     * Result<Town, String> town;
+     * Result<Hat, String> hat = town.then(map(Town::findHatShop)
+     *                               .then(map(Shop::purchaseHat));
+     * }
+     * </pre>
+     */
     public <T> T then(ResultMapper<S, F, T> biMapper) {
         return biMapper.onResult(this);
     }
