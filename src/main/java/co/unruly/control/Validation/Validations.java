@@ -1,15 +1,14 @@
 package co.unruly.control.Validation;
 
 import co.unruly.control.LinkList.LinkLists;
-import co.unruly.control.Result.Result;
+import co.unruly.control.Result.Attempt;
 import co.unruly.control.Result.Results;
 
 import java.util.List;
-import java.util.function.Function;
 
 public class Validations {
 
-    public static <T, E> Function<Result<T, FailedValidation<T, E>>, Result<T, List<E>>> treatFailuresAsList() {
-        return v -> v.then(Results.mapFailures(fv -> LinkLists.toList(fv.errors)));
+    public static <T, E> Attempt<T, T, FailedValidation<T, E>, List<E>> treatFailuresAsList() {
+        return Results.mapFailures(fv -> LinkLists.toList(fv.errors));
     }
 }
