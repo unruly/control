@@ -20,11 +20,31 @@ public abstract class Result<S, F>  {
     private Result() {
     }
 
+    /**
+     * Creates a new Success
+     */
     public static <S, F> Result<S, F> success(S value) {
         return new Success<>(value);
     }
 
+    /**
+     * Creates a new Success, taking the failure type for contexts where it can't be inferred.
+     */
+    public static <S, F> Result<S, F> success(S value, Class<F> failureType) {
+        return new Success<>(value);
+    }
+
+    /**
+     * Creates a new Failure
+     */
     public static <S, F> Result<S, F> failure(F error) {
+        return new Failure<>(error);
+    }
+
+    /**
+     * Creates a new Failure, taking the success type for contexts where it can't be inferred.
+     */
+    public static <S, F> Result<S, F> failure(F error, Class<S> successType) {
         return new Failure<>(error);
     }
 

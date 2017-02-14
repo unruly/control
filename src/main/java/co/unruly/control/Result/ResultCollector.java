@@ -16,7 +16,10 @@ import java.util.stream.Stream;
 import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.toList;
 
-
+/**
+ * Collects a Stream of Results into a Pair, with the left being a list of success values
+ * and the right being a list of failure values.
+ */
 class ResultCollector<L, R>
         implements Collector<
         Result<L, R>,

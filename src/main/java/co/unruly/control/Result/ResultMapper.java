@@ -7,6 +7,11 @@ import static co.unruly.control.Result.Result.success;
 
 /**
  * A function which takes in a Result, and outputs a value.
+ *
+ * Used in a context which expects a ResultMapper, this takes a Result and outputs a value.
+ *
+ * Used in a context which expects a Function, this takes a value and wraps it in a Success
+ * before applying onResult to that function.
  */
 @FunctionalInterface
 public interface ResultMapper<S, F, T> extends Function<S, T> {
