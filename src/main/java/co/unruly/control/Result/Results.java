@@ -23,10 +23,18 @@ public class Results {
      *   Result, and can be composed into a functional pipeline
      ******************************************************/
 
+    /**
+     * Allows introduction of types, if the early operations in a chain are
+     * unable to infer types and the notation is preferable to explicit generics
+     */
     public static <S, F> EndoAttempt<S, F> startingWith(Class<S> s, Class<F> f) {
         return r -> r;
     }
 
+    /**
+     * Fires an event if the result is a success, returning the unchanged Result
+     * in either case
+     */
     public static <S, F> EndoAttempt<S, F> ifSuccess(Consumer<S> c) {
         return r -> {
             r.either(functify(c), Unit::noOp);
@@ -34,6 +42,10 @@ public class Results {
         };
     }
 
+    /**
+     * Fires an event if the result is a failure, returning the unchanged Result
+     * in either case
+     */
     public static <S, F> EndoAttempt<S, F> ifFailure(Consumer<F> c) {
         return r -> {
             r.either(Unit::noOp, functify(c));
@@ -55,6 +67,13 @@ public class Results {
 
     public static <S, F, F1> Attempt<S, S, F, F1> flatMapFailures(Function<F, Result<S, F1>> f) {
         return r -> r.either(Result::success, f);
+    }
+
+    /**
+     * Flips an attempt, so successes are now considered failures and vice versa
+     */
+    public static <S, F> Attempt<S, F, F, S> invert() {
+        return r -> r.either(Result::failure, Result::success);
     }
 
     public static <S, S1> Attempt<S, S1, Exception, Exception> tryTo(Attempt<S, S1, Exception, Exception> f) {
@@ -110,6 +129,14 @@ public class Results {
     }
 
     /**
+     * Converts an Optional into a Result, using the failure generator
+     * if the Optional is empty.
+     */
+    public static <S, F> Result<S, F> fromOptional(Optional<S> maybeValue, Supplier<F> failureGenerator) {
+        return maybeValue.map(Result::<S, F>success).orElseGet(() -> Result.failure(failureGenerator.get()));
+    }
+
+    /**
      * Returns the success value, if this is a Success, or the provided value otherwise,
      * regardless of the failure value
      */
@@ -125,7 +152,7 @@ public class Results {
         return ResultMapper.of(identity(), __ -> supplier.get());
     }
 
-    public static <S> Consumer<Result<S, ?>> onSuccess(Consumer<S> c) {
+    public static <S, F> Consumer<Result<S, F>> onSuccess(Consumer<S> c) {
         return r -> r.either(functify(c), Unit::noOp);
     }
 
