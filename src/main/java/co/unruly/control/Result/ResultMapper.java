@@ -3,6 +3,7 @@ package co.unruly.control.Result;
 
 import java.util.function.Function;
 
+import static co.unruly.control.Result.Result.failure;
 import static co.unruly.control.Result.Result.success;
 
 /**

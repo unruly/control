@@ -13,4 +13,8 @@ public interface EndoAttempt<S, F> extends Attempt<S, S, F, F> {
     default EndoAttempt<S, F> then(EndoAttempt<S, F> f) {
         return r -> f.onResult(onResult(r));
     }
+
+    static <S, F>  EndoAttempt<S, F> identity() {
+        return result -> result;
+    }
 }

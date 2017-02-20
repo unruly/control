@@ -137,19 +137,11 @@ public class Results {
     }
 
     /**
-     * Returns the success value, if this is a Success, or the provided value otherwise,
-     * regardless of the failure value
-     */
-    public static <S, F> ResultMapper<S, F, S> orElse(S defaultValue) {
-        return ResultMapper.of(identity(), __ -> defaultValue);
-    }
-
-    /**
      * Returns the success value, if this is a Success, or the result of calling the
-     * provided supplier otherwise, regardless of the failure value
+     * provided function on the failure value if this is a failure
      */
-    public static <S, F> ResultMapper<S, F, S> orElseGet(Supplier<S> supplier) {
-        return ResultMapper.of(identity(), __ -> supplier.get());
+    public static <S, F> ResultMapper<S, F, S> orElseGet(Function<F, S> supplier) {
+        return ResultMapper.of(identity(), supplier);
     }
 
     public static <S, F> Consumer<Result<S, F>> onSuccess(Consumer<S> c) {
