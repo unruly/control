@@ -7,6 +7,7 @@ import java.util.function.Function;
 
 import static co.unruly.control.Result.Match.ifType;
 import static co.unruly.control.Result.Match.match;
+import static co.unruly.control.Result.Results.orElseGet;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -14,18 +15,14 @@ public class MatchTest {
 
     @Test
     public void canMatchOnType() {
-        FailureBiasedEndoAttempt<String, Exception> match = match(
+        Function<Exception, String> matchException = match(
             ifType(IOException.class, MatchTest::stringify),
             ifType(IllegalAccessException.class, MatchTest::stringifyIllegalAccess)
-        );
+        ).andFinally(orElseGet(x -> "balls"));
 
-        Function<Exception, String> fsFunction = x -> "balls";
-        ResultMapper<String, Exception, String> blarg = Results.orElseGet(fsFunction);
-        FailureBiasedResultMapper<String, Exception, String> flibble = match.andFinally(blarg);
-
-        assertThat(flibble.apply(new IOException("Cheese")), is("IOException: java.io.IOException: Cheese"));
-        assertThat(flibble.apply(new IllegalAccessException("Ketchup")), is("IllegalAccessException: java.lang.IllegalAccessException: Ketchup"));
-        assertThat(flibble.apply(new RuntimeException("Pickles")), is("balls"));
+        assertThat(matchException.apply(new IOException("Cheese")), is("IOException: java.io.IOException: Cheese"));
+        assertThat(matchException.apply(new IllegalAccessException("Ketchup")), is("IllegalAccessException: java.lang.IllegalAccessException: Ketchup"));
+        assertThat(matchException.apply(new RuntimeException("Pickles")), is("balls"));
     }
 
     private static String stringify(IOException ex) {
@@ -33,6 +30,10 @@ public class MatchTest {
     }
     private static String stringifyIllegalAccess(IllegalAccessException ex) {
         return "IllegalAccessException: " + ex;
+    }
+
+    static class A {
+        
     }
 
 }

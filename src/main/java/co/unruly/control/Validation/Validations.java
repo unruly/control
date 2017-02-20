@@ -9,6 +9,6 @@ import java.util.List;
 public class Validations {
 
     public static <T, E> Attempt<T, T, FailedValidation<T, E>, List<E>> treatFailuresAsList() {
-        return Results.mapFailures(fv -> LinkLists.toList(fv.errors));
+        return Results.mapFailure(fv -> LinkLists.toList(fv.errors));
     }
 }

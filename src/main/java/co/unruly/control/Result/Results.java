@@ -61,11 +61,11 @@ public class Results {
         return r -> r.either(f, Result::failure);
     }
 
-    public static <S, F, F1> Attempt<S, S, F, F1> mapFailures(Function<F, F1> f) {
-        return flatMapFailures(f.andThen(Result::failure));
+    public static <S, F, F1> Attempt<S, S, F, F1> mapFailure(Function<F, F1> f) {
+        return flatMapFailure(f.andThen(Result::failure));
     }
 
-    public static <S, F, F1> Attempt<S, S, F, F1> flatMapFailures(Function<F, Result<S, F1>> f) {
+    public static <S, F, F1> Attempt<S, S, F, F1> flatMapFailure(Function<F, Result<S, F1>> f) {
         return r -> r.either(Result::success, f);
     }
 

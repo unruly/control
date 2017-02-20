@@ -113,8 +113,8 @@ public class ResultsTest {
         final Result<Integer, String> six = success(6);
         final Result<Integer, String> failure = failure("Cannot parse number");
 
-        final Result<Integer, String> stillSix = six.then(mapFailures(String::toLowerCase));
-        final Result<Integer, String> lowerCaseFailure = failure.then(mapFailures(String::toLowerCase));
+        final Result<Integer, String> stillSix = six.then(mapFailure(String::toLowerCase));
+        final Result<Integer, String> lowerCaseFailure = failure.then(mapFailure(String::toLowerCase));
 
         assertThat(stillSix, Is.is(success(6)));
         assertThat(lowerCaseFailure, Is.is(failure("cannot parse number")));
