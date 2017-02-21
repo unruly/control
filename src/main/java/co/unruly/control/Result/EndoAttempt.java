@@ -1,5 +1,7 @@
 package co.unruly.control.Result;
 
+import java.util.stream.Stream;
+
 /**
  * Convenience functional interface for when an Attempt has the same input and output types,
  * as the type signatures can get very noisy otherwise.
@@ -16,5 +18,9 @@ public interface EndoAttempt<S, F> extends Attempt<S, S, F, F> {
 
     static <S, F>  EndoAttempt<S, F> identity() {
         return result -> result;
+    }
+
+    static <S, F> EndoAttempt<S, F> compose(EndoAttempt<S, F> ...attempts) {
+        return Stream.of(attempts).reduce(i -> i, EndoAttempt::then);
     }
 }
