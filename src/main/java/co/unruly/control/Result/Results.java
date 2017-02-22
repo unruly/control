@@ -5,6 +5,7 @@ import co.unruly.control.Unit;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -181,5 +182,15 @@ public class Results {
      */
     public static <S, F> Collector<Result<S, F>, Pair<List<S>, List<F>>, Pair<List<S>, List<F>>> split() {
         return new ResultCollector<>();
+    }
+
+    public static <A, B, X, F> ResultCombiner<A, B, X, F> combine(BiFunction<A, B, X> f) {
+        return (a, b) -> a.either(
+            succA -> b.either(
+                succB -> Result.success(f.apply(succA, succB)),
+                Result::failure
+            ),
+            Result::failure
+        );
     }
 }

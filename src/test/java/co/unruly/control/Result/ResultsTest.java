@@ -1,14 +1,19 @@
 package co.unruly.control.Result;
 
+import co.unruly.control.Matchers.ResultMatchers;
 import co.unruly.control.Pair;
 import org.hamcrest.core.Is;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import static co.unruly.control.Matchers.ResultMatchers.isFailureOf;
+import static co.unruly.control.Matchers.ResultMatchers.isFailureThat;
+import static co.unruly.control.Matchers.ResultMatchers.isSuccessOf;
 import static co.unruly.control.Result.Result.failure;
 import static co.unruly.control.Result.Result.success;
 import static co.unruly.control.Result.Results.*;
@@ -141,6 +146,22 @@ public class ResultsTest {
         List<Integer> successes = resultStream.collect(toList());
 
         assertThat(successes, hasItems(6, 5));
+    }
+
+    @Test
+    public void canMergeOperationsOnTwoResults() {
+        Result<Integer, String> evenSix = Result.success(6);
+        Result<Integer, String> evenTwo = Result.success(2);
+
+        Result<Integer, String> oddFive = Result.failure("Five is odd");
+        Result<Integer, String> oddSeven = Result.failure("Seven is odd");
+
+        ResultCombiner<Integer, Integer, Integer, String> multiplier = combine((x, y) -> x * y);
+
+        assertThat(multiplier.apply(evenSix, evenTwo), isSuccessOf(12));
+        assertThat(multiplier.apply(evenSix, oddSeven), isFailureOf("Seven is odd"));
+        assertThat(multiplier.apply(oddFive, evenTwo), isFailureOf("Five is odd"));
+        assertThat(multiplier.apply(oddFive, oddSeven), isFailureOf("Five is odd"));
     }
 
     @Test
