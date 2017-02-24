@@ -61,11 +61,11 @@ public class MatchTest {
 
     @Test
     public void canOperateOverAListOfOptionalProviders() {
-        String cheese = firstOf(
-                ifPresent(() -> Optional.empty()),
-                ifPresent(() -> Optional.of("Cheese!")),
-                ifPresent(() -> Optional.of("Bacon!"))
-        ).otherwise(() -> "Ketchup!");
+        String cheese = matchValue(new Things(null, "Cheese!", "Bacon!"),
+                ifPresent(Things::a),
+                ifPresent(Things::b),
+                ifPresent(Things::c)
+        ).otherwise(__ -> "Ketchup!");
 
         assertThat(cheese, is("Cheese!"));
     }
@@ -73,11 +73,11 @@ public class MatchTest {
 
     @Test
     public void usesDefaultIfNoOptionalProvidersProvideAValue() {
-        String cheese = firstOf(
-                ifPresent(() -> Optional.<String>empty()),
-                ifPresent(() -> Optional.empty()),
-                ifPresent(() -> Optional.empty())
-        ).otherwise(() -> "Ketchup!");
+        String cheese = matchValue(new Things(null, null, null),
+                ifPresent(Things::a),
+                ifPresent(Things::b),
+                ifPresent(Things::c)
+        ).otherwise(__ -> "Ketchup!");
 
         assertThat(cheese, is("Ketchup!"));
     }
@@ -114,6 +114,33 @@ public class MatchTest {
 
         String messageForC() {
             return "I'm a C and I say " + message();
+        }
+    }
+
+    static class Things {
+        final String a;
+        final String b;
+        final String c;
+
+
+        Things(String a, String b, String c) {
+            this.a = a;
+            this.b = b;
+            this.c = c;
+        }
+
+        Optional<String> a() {
+            return Optional.ofNullable(a);
+        }
+
+
+        Optional<String> b() {
+            return Optional.ofNullable(b);
+        }
+
+
+        Optional<String> c() {
+            return Optional.ofNullable(c);
         }
     }
 

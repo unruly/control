@@ -26,11 +26,6 @@ public class Match {
     }
 
     @SafeVarargs
-    public static <O> BoundMatchSupplier<O> firstOf(EndoAttempt<O, Unit>... potentialMatchers) {
-        return s -> attemptMatch(potentialMatchers).andFinally(orElseGet(failure -> s.get())).apply(Unit.UNIT);
-    }
-
-    @SafeVarargs
     public static <S, F> Attempt<S, F, F, S> attemptMatch(EndoAttempt<F, S>... potentialMatches) {
         return Results.<S, F>invert().then(compose(potentialMatches));
     }
@@ -51,8 +46,8 @@ public class Match {
         return ifIs(value::equals, function);
     }
 
-    public static <S, F> EndoAttempt<S, F> ifPresent(Supplier<Optional<S>> successProvider) {
-        return r -> r.then(Results.flatMapFailure(f -> successProvider.get().map(Result::<S, F>success).orElseGet(() -> Result.failure(f))));
+    public static <S, F> EndoAttempt<S, F> ifPresent(Function<F, Optional<S>> successProvider) {
+        return r -> r.then(Results.flatMapFailure(f -> successProvider.apply(f).map(Result::<S, F>success).orElseGet(() -> Result.failure(f))));
     }
 
 
@@ -64,10 +59,5 @@ public class Match {
     @FunctionalInterface
     public interface BoundMatchAttempt<I, O> {
         O otherwise(Function<I, O> baseCase);
-    }
-
-    @FunctionalInterface
-    public interface BoundMatchSupplier<O> {
-        O otherwise(Supplier<O> baseCase);
     }
 }
