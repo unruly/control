@@ -8,7 +8,6 @@ import java.util.function.Function;
 import static co.unruly.control.Result.Match.*;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 
 public class MatchTest {
 

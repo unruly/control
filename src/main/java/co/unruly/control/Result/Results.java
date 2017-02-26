@@ -12,7 +12,6 @@ import java.util.function.Supplier;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
 
-import static co.unruly.control.Result.Result.failure;
 import static co.unruly.control.Unit.functify;
 import static java.util.function.Function.identity;
 
@@ -54,18 +53,34 @@ public class Results {
         };
     }
 
+    /**
+     * If the result is a Success, applies the given function to that value and wraps
+     * it in a new Success. Otherwise, returns the Failure
+     */
     public static <S, S1, F> Attempt<S, S1, F, F> map(Function<S, S1> f) {
         return flatMap(f.andThen(Result::success));
     }
 
+    /**
+     * If the result is a Success, applies the given function to that value (which
+     * could return either a Success or Failure). Otherwise, returns the Failure.
+     */
     public static <S, S1, F> Attempt<S, S1, F, F> flatMap(Function<S, Result<S1, F>> f) {
         return r -> r.either(f, Result::failure);
     }
 
+    /**
+     * If the result is a Failure, applies the given function to that value and wraps
+     * it in a new Failure. Otherwise, returns the Success
+     */
     public static <S, F, F1> Attempt<S, S, F, F1> mapFailure(Function<F, F1> f) {
         return flatMapFailure(f.andThen(Result::failure));
     }
 
+    /**
+     * If the result is a Failure, applies the given function to that value (which
+     * could return either a Success or Failure). Otherwise, returns the Success.
+     */
     public static <S, F, F1> Attempt<S, S, F, F1> flatMapFailure(Function<F, Result<S, F1>> f) {
         return r -> r.either(Result::success, f);
     }
@@ -75,28 +90,6 @@ public class Results {
      */
     public static <S, F> Attempt<S, F, F, S> invert() {
         return r -> r.either(Result::failure, Result::success);
-    }
-
-    public static <S, S1> Attempt<S, S1, Exception, Exception> tryTo(Attempt<S, S1, Exception, Exception> f) {
-        return r -> {
-            try {
-                return f.onResult(r);
-            } catch (Exception ex) {
-                return failure(ex);
-            }
-        };
-    }
-
-    public static <S, S1, F, F1> Attempt<S, S1, F, F1> tryTo(
-            Attempt<S, S1, F, F1> f,
-            Function<Exception, F1> exceptionHandler) {
-        return r -> {
-            try {
-                return f.onResult(r);
-            } catch (Exception ex) {
-                return failure(exceptionHandler.apply(ex));
-            }
-        };
     }
 
     /*******************************************************
@@ -130,14 +123,6 @@ public class Results {
     }
 
     /**
-     * Converts an Optional into a Result, using the failure generator
-     * if the Optional is empty.
-     */
-    public static <S, F> Result<S, F> fromOptional(Optional<S> maybeValue, Supplier<F> failureGenerator) {
-        return maybeValue.map(Result::<S, F>success).orElseGet(() -> Result.failure(failureGenerator.get()));
-    }
-
-    /**
      * Returns the success value, if this is a Success, or the result of calling the
      * provided function on the failure value if this is a failure
      */
@@ -145,13 +130,6 @@ public class Results {
         return ResultMapper.of(identity(), supplier);
     }
 
-    public static <S, F> Consumer<Result<S, F>> onSuccess(Consumer<S> c) {
-        return r -> r.either(functify(c), Unit::noOp);
-    }
-
-    public static <F> Consumer<Result<?, F>> onFailure(Consumer<F> c) {
-        return r -> r.either(Unit::noOp, functify(c));
-    }
 
     /*******************************************************
      * Streaming operations:
@@ -184,6 +162,27 @@ public class Results {
         return new ResultCollector<>();
     }
 
+    /*******************************************************
+     * Conversion operations:
+     *   These operations are to facilitate creating a new
+     *   Result from something other than a Result
+     ******************************************************/
+
+    /**
+     * Converts an Optional into a Result, using the failure generator
+     * if the Optional is empty.
+     */
+    public static <S, F> Result<S, F> fromOptional(Optional<S> maybeValue, Supplier<F> failureGenerator) {
+        return maybeValue.map(Result::<S, F>success).orElseGet(() -> Result.failure(failureGenerator.get()));
+    }
+
+    /**
+     * Combines two Results into a single Result. If both arguments are a Success, then
+     * it applies the given function to their values and returns a Success of it.
+     *
+     * If either or both arguments are Failures, then this returns the first failure
+     * it encountered.
+     */
     public static <A, B, X, F> ResultCombiner<A, B, X, F> combine(BiFunction<A, B, X> f) {
         return (a, b) -> a.either(
             succA -> b.either(

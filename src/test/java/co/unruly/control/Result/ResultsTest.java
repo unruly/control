@@ -1,18 +1,15 @@
 package co.unruly.control.Result;
 
-import co.unruly.control.Matchers.ResultMatchers;
 import co.unruly.control.Pair;
 import org.hamcrest.core.Is;
 import org.junit.Test;
 
 import java.util.List;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static co.unruly.control.Matchers.ResultMatchers.isFailureOf;
-import static co.unruly.control.Matchers.ResultMatchers.isFailureThat;
 import static co.unruly.control.Matchers.ResultMatchers.isSuccessOf;
 import static co.unruly.control.Result.Result.failure;
 import static co.unruly.control.Result.Result.success;
@@ -130,9 +127,8 @@ public class ResultsTest {
         Result<String, String> six = success("6");
         Result<String, String> notANumber = success("NaN");
 
-
-        Result<Long, String> parsedSix = six.then(tryTo(map(Long::parseLong), Exception::toString));
-        Result<Long, String> parsedNaN = notANumber.then(tryTo(map(Long::parseLong), Throwable::toString));
+        Result<Long, String> parsedSix = six.then(Try.tryTo(Long::parseLong, Exception::toString));
+        Result<Long, String> parsedNaN = notANumber.then(Try.tryTo(Long::parseLong, Exception::toString));
 
         assertThat(parsedSix, Is.is(success(6L)));
         assertThat(parsedNaN, Is.is(failure("java.lang.NumberFormatException: For input string: \"NaN\"")));
@@ -181,7 +177,7 @@ public class ResultsTest {
 
         List<Long> halvedNumbers = inputs.map(
             startingWith(String.class, String.class)
-                .then(tryTo(map(Long::parseLong), Exception::toString))
+                .then(Try.tryTo(Long::parseLong, Exception::toString))
                 .then(flatMap(x -> x % 2 == 0 ? success(x / 2) : failure(x + " is odd")))
                 .then(ifFailure(failureCallback))
         ).flatMap(successes())
@@ -201,7 +197,7 @@ public class ResultsTest {
 
         Pair<List<Long>, List<String>> halvedNumbers = inputs.map(
             startingWith(String.class, String.class)
-                .then(tryTo(map(Long::parseLong), Exception::toString))
+                .then(Try.tryTo(Long::parseLong, Exception::toString))
                 .then(flatMap(x -> x % 2 == 0 ? success(x / 2) : failure(x + " is odd")))
         ).collect(Results.split());
 
