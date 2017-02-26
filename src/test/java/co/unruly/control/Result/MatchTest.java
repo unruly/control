@@ -8,6 +8,7 @@ import java.util.function.Function;
 import static co.unruly.control.Result.Match.*;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 public class MatchTest {
 
@@ -80,6 +81,25 @@ public class MatchTest {
         ).otherwise(__ -> "Ketchup!");
 
         assertThat(cheese, is("Ketchup!"));
+    }
+
+    @Test
+    public void useMatchToCalculateFactorial() {
+        assertThat(factorial(0), is(1));
+        assertThat(factorial(1), is(1));
+        assertThat(factorial(6), is(720));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void factorialOfNegativeNumberThrowsIllegalArgumentException() {
+        factorial(-1);
+    }
+
+    private static int factorial(int number) {
+        return matchValue(number,
+            ifIs(n -> n < 0, n -> { throw new IllegalArgumentException("Cannot calculate factorial of a negative number"); }),
+            ifEquals(0, n -> 1)
+        ).otherwise(n -> n * factorial(n-1));
     }
 
     static class A {
