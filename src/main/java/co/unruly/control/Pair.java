@@ -1,7 +1,7 @@
 package co.unruly.control;
 
 /**
- * Created by tom on 13/01/2017.
+ * A basic tuple type
  */
 public class Pair<L, R> {
 

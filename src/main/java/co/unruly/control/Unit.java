@@ -13,6 +13,9 @@ public enum Unit {
 
     UNIT;
 
+    /**
+     * Converts a Consumer to a Function, which returns Unit.UNIT
+     */
     public static <T> Function<T, Unit> functify(Consumer<T> toVoid) {
         return x -> {
             toVoid.accept(x);
@@ -20,14 +23,23 @@ public enum Unit {
         };
     }
 
+    /**
+     * Converts a Function to a Consumer, throwing away the return value
+     */
     public static <T> Consumer<T> voidify(Function<T, ?> function) {
         return function::apply;
     }
 
+    /**
+     * A no-op function which takes any argument, does nothing, and returns Unit.UNIT
+     */
     public static <T> Unit noOp(T __) {
         return UNIT;
     }
 
+    /**
+     * A no-op consumer which takes any argument and does nothing
+     */
     public static <T> void noOpConsumer(T __) {
         // do nothing
     }
