@@ -1,5 +1,6 @@
 package co.unruly.control.Result;
 
+import co.unruly.control.ThrowingLambdas;
 import co.unruly.control.ThrowingLambdas.ThrowingFunction;
 
 import java.util.function.Function;
@@ -37,6 +38,20 @@ public class Try {
         return tryTo(f, identity()).then(mapFailure(castToCheckedType));
     }
 
+    public static <I, S, F, X extends Exception> Attempt<I, S, F, F> flatTry(ThrowingLambdas.ThrowingFunction<I, Result<S, F>, X> f, Function<Exception, F> emap) {
+        return flatMap(tryToFlat(f, emap));
+    }
+
+    private static <I, S, F, X extends Exception> java.util.function.Function<I, Result<S, F>> tryToFlat(ThrowingLambdas.ThrowingFunction<I, Result<S, F>, X> f, Function<Exception, F> exceptionHandler) {
+        return s -> {
+            try {
+                return f.apply(s);
+            } catch (Exception ex) {
+                return failure(exceptionHandler.apply(ex));
+            }
+        };
+    }
+
     private static <I, O, F, X extends Exception> Function<I, Result<O, F>> tryToCall(ThrowingFunction<I, O, X> f, Function<Exception, F> exceptionHandler) {
         return s -> {
             try {
@@ -46,4 +61,5 @@ public class Try {
             }
         };
     }
+
 }
