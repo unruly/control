@@ -39,7 +39,7 @@ public class Try {
         return flatMap(tryToFlat(f, exceptionHandler));
     }
 
-    public static <R> Function<Exception, R> catching(EndoAttempt<R, Exception> catchClauses) {
+    public static <R> Function<Exception, R> catching(EndoAttempt<R, Exception> ...catchClauses) {
         return match(catchClauses).otherwise(ex -> { throw new RuntimeException("Could not catch exception type", ex); });
     }
 

@@ -1,10 +1,15 @@
 package co.unruly.control.Result;
 
+import co.unruly.control.ThrowingLambdas;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.function.Function;
 
+import static co.unruly.control.Result.Match.ifType;
+import static co.unruly.control.Result.Results.collapse;
 import static co.unruly.control.Result.Results.orElseGet;
+import static co.unruly.control.Result.Try.catching;
 import static co.unruly.control.Result.Try.tryTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -33,6 +38,20 @@ public class TryTest {
     public void canSpecialiseHandlerForCheckedExceptions() {
         Function<String, String> doSomething = tryTo(TryTest::throwsCheckedException, CheckedException.class)
             .andFinally(orElseGet(CheckedException::specialisedMethod));
+
+        assertThat(doSomething.apply("throw"), is("This is something only this exception can do"));
+        assertThat(doSomething.apply("play nice"), is("Today, I was good"));
+    }
+
+    @Test
+    public void canUseCatchingHandlerForMultipleCheckedExceptionTypes() {
+        Function<String, String> doSomething = tryTo(
+            TryTest::throwsCheckedException,
+            catching(
+                ifType(CheckedException.class, CheckedException::specialisedMethod),
+                ifType(IOException.class, ex -> "an IO exception, boo")
+            )
+        ).andFinally(collapse());
 
         assertThat(doSomething.apply("throw"), is("This is something only this exception can do"));
         assertThat(doSomething.apply("play nice"), is("Today, I was good"));
