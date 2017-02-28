@@ -3,7 +3,7 @@
 
     <groupId>co.unruly</groupId>
     <artifactId>control</artifactId>
-    <version>0.7.6-SNAPSHOT</version>
+    <version>0.7.6</version>
     <packaging>jar</packaging>
 
     <name>control</name>
@@ -40,7 +40,7 @@
         <connection>scm:git:git@github.com:unruly/${project.artifactId}.git</connection>
         <developerConnection>scm:git:git@github.com:unruly/${project.artifactId}.git</developerConnection>
         <url>git@github.com:unruly/${project.artifactId}.git</url>
-        <tag>HEAD</tag>
+        <tag>control-0.7.6</tag>
     </scm>
 
     <dependencies>
