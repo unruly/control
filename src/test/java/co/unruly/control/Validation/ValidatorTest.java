@@ -171,7 +171,7 @@ public class ValidatorTest {
                 Validators.rejectIf(multipleOf(7), x -> x + " divides by 7")
         );
 
-        Stream.of(1,2,3,4,5,6,7,8,9).map(isPrime).forEach(ifSuccess(log));
+        Stream.of(1,2,3,4,5,6,7,8,9).map(isPrime).forEach(onSuccess(log));
 
         verify(log).accept(1);
         verify(log).accept(2);
@@ -192,7 +192,7 @@ public class ValidatorTest {
                 Validators.rejectIf(multipleOf(7), x -> x + " divides by 7")
         );
 
-        Stream.of(1,2,3,4,5,6,7,8,9).map(isPrime).forEach(ifFailure(log));
+        Stream.of(1,2,3,4,5,6,7,8,9).map(isPrime).forEach(onFailure(log));
 
         verify(log).accept(validationFailure(4, "4 divides by 2"));
         verify(log).accept(validationFailure(6, "6 divides by 2", "6 divides by 3"));
@@ -212,7 +212,7 @@ public class ValidatorTest {
                 Validators.rejectIf(multipleOf(7), x -> x + " divides by 7")
         ));
 
-        Stream.of(1,2,3,4,5,6,7,8,9).map(isPrime).forEach(ifFailure(log));
+        Stream.of(1,2,3,4,5,6,7,8,9).map(isPrime).forEach(onFailure(log));
 
         verify(log).accept(validationFailure(4, "4 divides by 2"));
         verify(log).accept(validationFailure(6, "6 divides by 2"));
@@ -250,7 +250,7 @@ public class ValidatorTest {
                 Validators.rejectIf(multipleOf(7), x -> x + " divides by 7")
         );
 
-        Stream.of(1,2,3,4,5,6,7,8,9).map(isPrime).forEach(ifFailure(v -> v.errors.forEach(e -> log.accept(v.value, e))));
+        Stream.of(1,2,3,4,5,6,7,8,9).map(isPrime).forEach(onFailure(v -> v.errors.forEach(e -> log.accept(v.value, e))));
 
         verify(log).accept(4, "4 divides by 2");
         verify(log).accept(6, "6 divides by 2");
@@ -271,7 +271,7 @@ public class ValidatorTest {
                 Validators.rejectIf(multipleOf(7), x -> x + " divides by 7")
         ), (num, msg) -> msg + ", oh boy");
 
-        Stream.of(1,2,3,4,5,6,7,8,9).map(isPrime).forEach(ifFailure(v -> v.errors.forEach(e -> log.accept(v.value, e))));
+        Stream.of(1,2,3,4,5,6,7,8,9).map(isPrime).forEach(onFailure(v -> v.errors.forEach(e -> log.accept(v.value, e))));
 
         verify(log).accept(4, "4 divides by 2, oh boy");
         verify(log).accept(6, "6 divides by 2, oh boy");

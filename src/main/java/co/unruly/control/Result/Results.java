@@ -35,7 +35,7 @@ public class Results {
      * Fires an event if the result is a success, returning the unchanged Result
      * in either case
      */
-    public static <S, F> EndoAttempt<S, F> ifSuccess(Consumer<S> c) {
+    public static <S, F> EndoAttempt<S, F> onSuccess(Consumer<S> c) {
         return r -> {
             r.either(functify(c), Unit::noOp);
             return r;
@@ -46,7 +46,7 @@ public class Results {
      * Fires an event if the result is a failure, returning the unchanged Result
      * in either case
      */
-    public static <S, F> EndoAttempt<S, F> ifFailure(Consumer<F> c) {
+    public static <S, F> EndoAttempt<S, F> onFailure(Consumer<F> c) {
         return r -> {
             r.either(Unit::noOp, functify(c));
             return r;
@@ -107,6 +107,23 @@ public class Results {
     }
 
     /**
+     * Takes a Result where the failure type is an Exception, and either
+     * returns the Success value or throws the Exception (wrapped in a
+     * RuntimeException)
+     */
+    public static <T> ResultMapper<T, Exception, T> getOrThrow() {
+        return ResultMapper.of(identity(), ex -> { throw new RuntimeException(ex); });
+    }
+
+    /**
+     * Returns the success value, if this is a Success, or the result of calling the
+     * provided function on the failure value if this is a failure
+     */
+    public static <S, F> ResultMapper<S, F, S> ifFailed(Function<F, S> supplier) {
+        return ResultMapper.of(identity(), supplier);
+    }
+
+    /**
      * Converts a Result into either an Optional containing the success
      * value, or an empty Optional if it's a failure.
      */
@@ -120,14 +137,6 @@ public class Results {
      */
     public static <S, F> ResultMapper<S, F, Optional<F>> failureAsOptional() {
         return ResultMapper.of(__ -> Optional.empty(), Optional::of);
-    }
-
-    /**
-     * Returns the success value, if this is a Success, or the result of calling the
-     * provided function on the failure value if this is a failure
-     */
-    public static <S, F> ResultMapper<S, F, S> orElseGet(Function<F, S> supplier) {
-        return ResultMapper.of(identity(), supplier);
     }
 
 

@@ -61,8 +61,8 @@ public class ResultsTest {
         Result<Integer, String> success = success(5);
 
         success
-            .then(ifSuccess(successCallback))
-            .then(ifFailure(failureCallback));
+            .then(onSuccess(successCallback))
+            .then(onFailure(failureCallback));
 
         verify(successCallback).accept(5);
         verifyZeroInteractions(failureCallback);
@@ -76,8 +76,8 @@ public class ResultsTest {
         Result<Integer, String> failure = failure("oops");
 
         failure
-            .then(ifSuccess(successCallback))
-            .then(ifFailure(failureCallback));
+            .then(onSuccess(successCallback))
+            .then(onFailure(failureCallback));
 
         verify(failureCallback).accept("oops");
         verifyZeroInteractions(successCallback);
@@ -179,7 +179,7 @@ public class ResultsTest {
             startingWith(String.class, String.class)
                 .then(Try.tryTo(Long::parseLong, Exception::toString))
                 .then(flatMap(x -> x % 2 == 0 ? success(x / 2) : failure(x + " is odd")))
-                .then(ifFailure(failureCallback))
+                .then(onFailure(failureCallback))
         ).flatMap(successes())
          .collect(toList());
 
