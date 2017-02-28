@@ -192,4 +192,11 @@ public class Results {
             Result::failure
         );
     }
+
+    /**
+     * Takes a value and immediately applies a ResultMapper to it.
+     */
+    public static <S, F, T> T with(S input, ResultMapper<S, F, T> resultMapper) {
+        return resultMapper.apply(input);
+    }
 }

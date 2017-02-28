@@ -19,6 +19,14 @@ public class ThrowingLambdas {
     public interface ThrowingFunction<I, O, X extends Exception> {
         O apply(I input) throws X;
 
+        default <T> ThrowingFunction<I, T, X> andThen(Function<O, T> nextFunction) {
+            return x -> nextFunction.apply(apply(x));
+        }
+
+        default <T> ThrowingFunction<T, O, X> compose(Function<T, I> nextFunction) {
+            return x -> apply(nextFunction.apply(x));
+        }
+
         /**
          * Converts the provided function into a regular Function, where any thrown exceptions are
          * wrapped in a RuntimeException.

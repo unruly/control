@@ -6,6 +6,7 @@ import co.unruly.control.ThrowingLambdas.ThrowingFunction;
 import java.util.function.Function;
 
 import static co.unruly.control.Result.Match.ifType;
+import static co.unruly.control.Result.Match.match;
 import static co.unruly.control.Result.Result.failure;
 import static co.unruly.control.Result.Result.success;
 import static co.unruly.control.Result.Results.flatMap;
@@ -15,19 +16,31 @@ import static java.util.function.Function.identity;
 public class Try {
 
     public static <I, O, X extends Exception> Attempt<I, O, Exception, Exception> tryTo(ThrowingFunction<I, O, X> f) {
-        return flatMap(tryToCall(f, identity()));
+        return tryTo(f, identity());
     }
 
     public static <I, O, F, X extends Exception> Attempt<I, O, F, F> tryTo(ThrowingFunction<I, O, X> f, Function<Exception, F> exceptionHandler) {
-        return flatMap(tryToCall(f, exceptionHandler));
+        return flatTry(f.andThen(Result::success), exceptionHandler);
     }
 
     public static <I, O, R extends Exception, X extends R> Attempt<I, O, R, R> tryTo(ThrowingFunction<I, O, X> f, Class<R> checkedType) {
-        return flatMap(tryChecked(f, checkedType));
+        return tryTo(f, checkedType, identity());
     }
 
     public static <I, O, F, R extends Exception, X extends R> Attempt<I, O, F, F> tryTo(ThrowingFunction<I, O, X> f, Class<R> checkedType, Function<R, F> exceptionHandler) {
         return flatMap(tryChecked(f, checkedType).then(mapFailure(exceptionHandler)));
+    }
+
+    public static <I, S, X extends Exception> Attempt<I, S, Exception, Exception> flatTry(ThrowingLambdas.ThrowingFunction<I, Result<S, Exception>, X> f) {
+        return flatTry(f, identity());
+    }
+
+    public static <I, S, F, X extends Exception> Attempt<I, S, F, F> flatTry(ThrowingLambdas.ThrowingFunction<I, Result<S, F>, X> f, Function<Exception, F> exceptionHandler) {
+        return flatMap(tryToFlat(f, exceptionHandler));
+    }
+
+    public static <R> Function<Exception, R> catching(EndoAttempt<R, Exception> catchClauses) {
+        return match(catchClauses).otherwise(ex -> { throw new RuntimeException("Could not catch exception type", ex); });
     }
 
     private static <I, O, R extends Exception, X extends R> Attempt<I, O, Exception, R> tryChecked(ThrowingFunction<I, O, X> f, Class<R> checkedType) {
@@ -38,9 +51,6 @@ public class Try {
         return tryTo(f, identity()).then(mapFailure(castToCheckedType));
     }
 
-    public static <I, S, F, X extends Exception> Attempt<I, S, F, F> flatTry(ThrowingLambdas.ThrowingFunction<I, Result<S, F>, X> f, Function<Exception, F> emap) {
-        return flatMap(tryToFlat(f, emap));
-    }
 
     private static <I, S, F, X extends Exception> java.util.function.Function<I, Result<S, F>> tryToFlat(ThrowingLambdas.ThrowingFunction<I, Result<S, F>, X> f, Function<Exception, F> exceptionHandler) {
         return s -> {
