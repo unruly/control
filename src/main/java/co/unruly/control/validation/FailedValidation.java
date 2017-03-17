@@ -3,9 +3,10 @@ package co.unruly.control.validation;
 import co.unruly.control.linklist.LinkLists;
 import co.unruly.control.linklist.NonEmptyList;
 
+import java.util.List;
 import java.util.Objects;
 
-public final class FailedValidation<T, E> {
+public final class FailedValidation<T, E> implements ForwardingList<E> {
 
     public final T value;
     public final NonEmptyList<E> errors;
@@ -35,5 +36,10 @@ public final class FailedValidation<T, E> {
     @Override
     public int hashCode() {
         return Objects.hash(value, errors);
+    }
+
+    @Override
+    public List<E> delegate() {
+        return LinkLists.toList(errors);
     }
 }
