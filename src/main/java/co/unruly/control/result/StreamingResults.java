@@ -26,15 +26,19 @@ public interface StreamingResults {
         return result -> result.either(success -> { consumer.accept(success); return UNIT; } , f -> UNIT);
     }
 
-    static <S, F, EF extends F> Function<Result<S, F>, Result<S, F>> recover(Class<EF> clazz, Function<EF, S> recoveryFunction) {
+    static <S, F, EF extends F> Function<Result<S, F>, Result<S, F>> recoverIf(Class<EF> clazz, Function<EF, S> recoveryFunction) {
         return Match.<S, F, EF>ifType(clazz, recoveryFunction)::onResult;
     }
 
-    static <FS, IS extends FS, F, OS extends FS> Function<Result<IS, F>, FS> failuresTo(Function<F, OS> recovery) {
+    static <S, F, EF extends F> Function<Result<S, F>, Result<S, F>> recover(EndoAttempt<S, F> recoveryFunction) {
+        return recoveryFunction::onResult;
+    }
+
+    static <FS, IS extends FS, F, OS extends FS> Function<Result<IS, F>, FS> recoverAll(Function<F, OS> recovery) {
         return result -> result.either(i -> i, recovery);
     }
 
-    static <FS, IS extends FS, F, OS extends FS> Function<Result<IS, F>, FS> failuresTo(Supplier<OS> defaultValue) {
-        return failuresTo(__ -> defaultValue.get());
+    static <FS, IS extends FS, F, OS extends FS> Function<Result<IS, F>, FS> recoverAll(Supplier<OS> defaultValue) {
+        return recoverAll(__ -> defaultValue.get());
     }
 }

@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static co.unruly.control.result.Match.ifIs;
+import static co.unruly.control.result.Match.ifType;
 import static co.unruly.control.result.StreamingResults.*;
 import static co.unruly.control.result.Try.tryTo;
 import static java.util.stream.Collectors.toList;
@@ -20,12 +22,12 @@ public class ExceptionsInStreamsHandling {
             .map(tryTo(this::findCustomerByName))
             .peek(onSuccess(this::sendEmailUpdateTo))
             .map(onSuccess(Customer::age))
-            .map(recover(NoCustomerWithThatName.class, error -> {
+            .map(recoverIf(NoCustomerWithThatName.class, error -> {
                 log("Customer not found :(");
                 return -1;
             }))
-            .map(recover(IOException.class, error -> -2))
-            .map(failuresTo(__ -> -127))
+            .map(recoverIf(IOException.class, error -> -2))
+            .map(recoverAll(__ -> -127))
             .collect(toList());
 
     }
@@ -37,13 +39,12 @@ public class ExceptionsInStreamsHandling {
             .map(tryTo(this::findCustomerByName))
             .peek(onSuccess(this::sendEmailUpdateTo))
             .map(onSuccessTry(Customer::calculateValue))
-            .map(onSuccessTry(x -> x * 2))
-            .map(recover(NoCustomerWithThatName.class, error -> {
+            .map(recoverIf(NoCustomerWithThatName.class, error -> {
                 log("Customer not found :(");
                 return -1;
             }))
-            .map(recover(IOException.class, error -> -2))
-            .map(failuresTo(() -> -127))
+            .map(recover(ifType(IOException.class, error -> -2)))
+            .map(recoverAll(() -> -127))
             .collect(toList());
 
     }
