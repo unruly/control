@@ -192,14 +192,24 @@ public class Results {
      * If either or both arguments are Failures, then this returns the first failure
      * it encountered.
      */
-    public static <A, B, X, F> ResultCombiner<A, B, X, F> combine(BiFunction<A, B, X> f) {
-        return (a, b) -> a.either(
-            succA -> b.either(
-                succB -> Result.success(f.apply(succA, succB)),
-                Result::failure
-            ),
-            Result::failure
-        );
+    public static <A, B, F> ResultMapper<A, F, MergeableResults<A, B, F>> combineWith(Result<B, F> secondArgument) {
+        return result -> new MergeableResults<A, B, F>() {
+            @Override
+            public <C> Result<C, F> using(BiFunction<A, B, C> combiner) {
+                return result.either(
+                    s1 -> secondArgument.either(
+                        s2 -> Result.success(combiner.apply(s1, s2)),
+                        Result::failure
+                    ),
+                    Result::failure
+                );
+            }
+        };
+    }
+
+    @FunctionalInterface
+    public interface MergeableResults<A, B, F>  {
+        <C> Result<C, F> using(BiFunction<A, B, C> combiner);
     }
 
     /**
