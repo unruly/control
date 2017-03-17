@@ -37,7 +37,7 @@ public abstract class Result<S, F>  {
     /**
      * Creates a new Failure
      */
-    public static <S, F> Result<S, F> failure(F error) {
+    public static <S, FS, F extends FS> Result<S, FS> failure(F error) {
         return new Failure<>(error);
     }
 
