@@ -6,7 +6,7 @@ import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
-public interface ForwardingList<T>  {
+public interface ForwardingList<T> extends List<T> {
 
     List<T> delegate();
 
