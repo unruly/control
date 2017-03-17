@@ -119,8 +119,8 @@ public class Results {
      * Returns the success value, if this is a Success, or the result of calling the
      * provided function on the failure value if this is a failure
      */
-    public static <S, F> ResultMapper<S, F, S> ifFailed(Function<F, S> supplier) {
-        return ResultMapper.of(identity(), supplier);
+    public static <OS, F, IS extends OS> ResultMapper<IS, F, OS> ifFailed(Function<F, OS> supplier) {
+        return ResultMapper.of(i->i, supplier);
     }
 
     /**

@@ -11,27 +11,26 @@ A `Result<S, F>` is either a `Success<S>` or a `Failure<F>`. Once a `Result` has
 ```java
 public static Breakfast makeBreakfast() {
     // I don't know whether the eggs are good or not...
-    Result<EggBox, Garbage> eggs 
-        = fridge.areEggsOff() 
-            ? success(fridge.getEggs()) 
-            : failure(new Garbage(fridge.getEggs()));
-    
+    Result<Eggs, Garbage> eggs
+        = fridge.areEggsOff()
+        ? success(fridge.getEggs())
+        : failure(new Garbage(fridge.getEggs()));
+
     // I'm also terrible at cooking, and can ruin eggs by burning
     // or undercooking them, but salting them isn't a problem
-    Result<ScrambledEggs, Garbage> scrambledEggs 
+    Result<ScrambledEggs, Garbage> scrambledEggs
         = eggs.then(flatMap(Eggs::scramble))
-              .then(map(Condiments::salt));
-     
-    
+        .then(map(Condiments::salt));
+
+
     // I can reliably turn bread into toast, too
-    Result<Toast, Garbage> toast 
-        = success(bread).then(map(Bread::toast));
-    
+    Result<Toast, Garbage> toast
+        = success(bread, Garbage.class).then(map(Bread::toast));
+
     // I am however good enough to put the eggs on toast
-    Result<ScrambledEggsOnToast, Garbage> eggsOnToast 
-        = combine(Assembly::putEggsOnToast).apply(scrambledEggs, toast);
-        
-    return eggsOnToast.then(orElseGet(__ -> new BowlOfCornflakes());
+    Result<ScrambledEggsOnToast, Garbage> eggsOnToast = scrambledEggs.then(combineWith(toast)).using(ScrambledEggsOnToast::new);
+
+    return eggsOnToast.then(ifFailed(__ -> new BowlOfCornflakes()));
 }
 ```
 

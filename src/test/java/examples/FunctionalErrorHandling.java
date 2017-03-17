@@ -1,6 +1,7 @@
 package examples;
 
 import co.unruly.control.result.Result;
+import co.unruly.control.result.ResultMapper;
 import org.junit.Test;
 
 import static co.unruly.control.result.Result.failure;
@@ -34,7 +35,7 @@ public class FunctionalErrorHandling {
         // I am however good enough to put the eggs on toast
         Result<ScrambledEggsOnToast, Garbage> eggsOnToast = scrambledEggs.then(combineWith(toast)).using(ScrambledEggsOnToast::new);
 
-//        Breakfast breakfast = eggsOnToast.then(ifFailed(__ -> new BowlOfCornflakes());
+        Breakfast breakfast = eggsOnToast.then(ifFailed(__ -> new BowlOfCornflakes()));
     }
 
     private static class Fridge {
