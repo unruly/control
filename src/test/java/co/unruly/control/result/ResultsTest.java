@@ -152,12 +152,10 @@ public class ResultsTest {
         Result<Integer, String> oddFive = Result.failure("Five is odd");
         Result<Integer, String> oddSeven = Result.failure("Seven is odd");
 
-        ResultCombiner<Integer, Integer, Integer, String> multiplier = combine((x, y) -> x * y);
-
-        assertThat(multiplier.apply(evenSix, evenTwo), isSuccessOf(12));
-        assertThat(multiplier.apply(evenSix, oddSeven), isFailureOf("Seven is odd"));
-        assertThat(multiplier.apply(oddFive, evenTwo), isFailureOf("Five is odd"));
-        assertThat(multiplier.apply(oddFive, oddSeven), isFailureOf("Five is odd"));
+        assertThat(evenSix.then(combineWith(evenTwo)).using((x, y) -> x * y), isSuccessOf(12));
+        assertThat(evenSix.then(combineWith(oddSeven)).using((x, y) -> x * y), isFailureOf("Seven is odd"));
+        assertThat(oddFive.then(combineWith(evenTwo)).using((x, y) -> x * y), isFailureOf("Five is odd"));
+        assertThat(oddFive.then(combineWith(oddSeven)).using((x, y) -> x * y), isFailureOf("Five is odd"));
     }
 
     @Test

@@ -193,6 +193,7 @@ public class Results {
      * it encountered.
      */
     public static <A, B, F> ResultMapper<A, F, MergeableResults<A, B, F>> combineWith(Result<B, F> secondArgument) {
+        // ugh ugh ugh we need an abstract class because otherwise it can't infer generics properly can i be sick now? ta
         return result -> new MergeableResults<A, B, F>() {
             @Override
             public <C> Result<C, F> using(BiFunction<A, B, C> combiner) {

@@ -1,7 +1,6 @@
 package examples;
 
 import co.unruly.control.result.Result;
-import co.unruly.control.result.Results;
 import org.junit.Test;
 
 import static co.unruly.control.result.Result.failure;
