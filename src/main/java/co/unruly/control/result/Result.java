@@ -58,7 +58,7 @@ public abstract class Result<S, F>  {
      * @param <R>       the type of the end result
      * @return The result of executing onSuccess if this result is a Success, or onFailure if it's a failure
      */
-    public abstract <R> R either(Function<S, R> onSuccess, Function<F, R> onFailure);
+    public abstract <R, R1 extends R, R2 extends R> R either(Function<S, R1> onSuccess, Function<F, R2> onFailure);
 
     /**
      * Applies a ResultMapper (a function taking a Result) to this Result. This permits
@@ -107,7 +107,7 @@ public abstract class Result<S, F>  {
         }
 
         @Override
-        public <T> T either(Function<L, T> onSuccess, Function<R, T> onRight) {
+        public <S, S1 extends S, S2 extends S> S either(Function<L, S1> onSuccess, Function<R, S2> onFailure) {
             return onSuccess.apply(value);
         }
 
@@ -138,7 +138,7 @@ public abstract class Result<S, F>  {
         }
 
         @Override
-        public <T> T either(Function<L, T> onSuccess, Function<R, T> onFailure) {
+        public <S, S1 extends S, S2 extends S> S either(Function<L, S1> onSuccess, Function<R, S2> onFailure) {
             return onFailure.apply(value);
         }
 
