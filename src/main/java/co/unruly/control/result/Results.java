@@ -65,10 +65,10 @@ public class Results {
      * If the result is a Success, applies the given function to that value (which
      * could return either a Success or Failure). Otherwise, returns the Failure.
      */
-    public static <S, S1, OF, IF extends OF, FF extends OF> Attempt<S, S1, IF, OF> flatMap(Function<S, Result<S1, FF>> f) {
+    public static <S, S1, F, FF extends F> Attempt<S, S1, F, F> flatMap(Function<S, Result<S1, FF>> f) {
         return r -> r.either(
             success -> f.apply(success).then(mapFailure(Results::upcast)),
-            fail -> Result.<S1, IF, IF>failure(fail).then(mapFailure(Results::upcast)));
+            Result::failure);
     }
 
     /**
