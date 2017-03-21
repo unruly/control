@@ -12,7 +12,7 @@ public interface Attempt<S, S1, F, F1> extends ResultMapper<S, F, Result<S1, F1>
      * Compose two Attempts together, executing first this Attempt and then the provided Attempt.
      */
     default <S2, F2> Attempt<S, S2, F, F2> then(Attempt<S1, S2, F1, F2> f) {
-        return r -> f.onResult(onResult(r));
+        return this.andThen(f)::apply;
     }
 
     /**
@@ -20,6 +20,6 @@ public interface Attempt<S, S1, F, F1> extends ResultMapper<S, F, Result<S1, F1>
      * value.
      */
     default <T> ResultMapper<S, F, T> andFinally(ResultMapper<S1, F1, T> terminal) {
-        return r -> terminal.onResult(onResult(r));
+        return this.andThen(terminal)::apply;
     }
 }

@@ -1,6 +1,7 @@
 package co.unruly.control.result;
 
 import co.unruly.control.Pair;
+import co.unruly.control.ThrowingLambdas;
 import org.hamcrest.core.Is;
 import org.junit.Test;
 
@@ -127,8 +128,8 @@ public class ResultsTest {
         Result<String, String> six = success("6");
         Result<String, String> notANumber = success("NaN");
 
-        Result<Long, String> parsedSix = six.then(Try.tryTo(Long::parseLong, Exception::toString));
-        Result<Long, String> parsedNaN = notANumber.then(Try.tryTo(Long::parseLong, Exception::toString));
+        Result<Long, String> parsedSix = six.then(flatMap(Try.tryTo(Long::parseLong, Exception::toString)));
+        Result<Long, String> parsedNaN = notANumber.then(flatMap(Try.tryTo(Long::parseLong, Exception::toString)));
 
         assertThat(parsedSix, Is.is(success(6L)));
         assertThat(parsedNaN, Is.is(failure("java.lang.NumberFormatException: For input string: \"NaN\"")));
@@ -173,13 +174,12 @@ public class ResultsTest {
         Stream<String> inputs = Stream.of("6", "5", "NaN");
         Consumer<String> failureCallback = mock(Consumer.class);
 
-        List<Long> halvedNumbers = inputs.map(
-            startingWith(String.class, String.class)
-                .then(Try.tryTo(Long::parseLong, Exception::toString))
-                .then(flatMap(x -> x % 2 == 0 ? success(x / 2) : failure(x + " is odd")))
-                .then(onFailure(failureCallback))
-        ).flatMap(successes())
-         .collect(toList());
+        List<Long> halvedNumbers = inputs
+            .map(Try.tryTo(Long::parseLong, Exception::toString))
+            .map(flatMap(x -> x % 2 == 0 ? success(x / 2) : failure(x + " is odd")))
+            .map(onFailure(failureCallback))
+            .flatMap(successes())
+            .collect(toList());
 
         assertThat(halvedNumbers, hasItems(3L));
 
@@ -193,11 +193,10 @@ public class ResultsTest {
     public void exampleSplitResults() {
         Stream<String> inputs = Stream.of("6", "5", "NaN");
 
-        Pair<List<Long>, List<String>> halvedNumbers = inputs.map(
-            startingWith(String.class, String.class)
-                .then(Try.tryTo(Long::parseLong, Exception::toString))
-                .then(flatMap(x -> x % 2 == 0 ? success(x / 2) : failure(x + " is odd")))
-        ).collect(Results.split());
+        Pair<List<Long>, List<String>> halvedNumbers = inputs
+                .map(Try.tryTo(Long::parseLong, Exception::toString))
+                .map(flatMap(x -> x % 2 == 0 ? success(x / 2) : failure(x + " is odd")))
+                .collect(Results.split());
 
         assertThat(halvedNumbers.left, hasItems(3L));
         assertThat(halvedNumbers.right, hasItems("java.lang.NumberFormatException: For input string: \"NaN\"", "5 is odd"));

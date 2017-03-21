@@ -96,7 +96,7 @@ public abstract class Result<S, F>  {
      * </pre>
      */
     public <T, T2 extends T> T then(ResultMapper<S, F, T2> biMapper) {
-        return biMapper.onResult(this);
+        return biMapper.apply(this);
     }
 
     private static final class Success<L, R> extends Result<L, R> {

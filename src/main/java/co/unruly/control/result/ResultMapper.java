@@ -15,15 +15,15 @@ import static co.unruly.control.result.Result.success;
  * before applying onResult to that function.
  */
 @FunctionalInterface
-public interface ResultMapper<S, F, T> extends Function<S, T>, Consumer<Result<S, F>> {
+public interface ResultMapper<S, F, T> extends Function<Result<S, F>, T>, Consumer<Result<S, F>> {
 
-    T onResult(Result<S, F> r);
+    T apply(Result<S, F> r);
 
-    default T apply(S initialValue) {
-        return onResult(success(initialValue));
+    default T lifting(S initialValue) {
+        return apply(success(initialValue));
     }
 
-    default void accept(Result<S, F> value) { onResult(value); }
+    default void accept(Result<S, F> value) { apply(value); }
 
     /**
      * Creates a ResultMapper from two functions: one to apply in the case of success, one in the case

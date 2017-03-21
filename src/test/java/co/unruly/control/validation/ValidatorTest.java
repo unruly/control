@@ -34,8 +34,8 @@ public class ValidatorTest {
     public void canCreateValidatorsWithFixedErrorMessages() {
         Validator<Integer, String> isEven = Validators.acceptIf(divisibleBy(2), "odd");
 
-        Result<Integer, FailedValidation<Integer, String>> validate4 = isEven.apply(4);
-        Result<Integer, FailedValidation<Integer, String>> validate5 = isEven.apply(5);
+        Result<Integer, FailedValidation<Integer, String>> validate4 = isEven.lifting(4);
+        Result<Integer, FailedValidation<Integer, String>> validate5 = isEven.lifting(5);
 
         assertThat(validate4, is(success(4)));
 
@@ -47,8 +47,8 @@ public class ValidatorTest {
     public void canCreateValidatorsWithDynamicErrorMessages() {
         Validator<Integer, String> isEven = Validators.acceptIf(divisibleBy(2), x -> String.format("%d is odd", x));
 
-        Result<Integer, FailedValidation<Integer, String>> validate4 = isEven.apply(4);
-        Result<Integer, FailedValidation<Integer, String>> validate5 = isEven.apply(5);
+        Result<Integer, FailedValidation<Integer, String>> validate4 = isEven.lifting(4);
+        Result<Integer, FailedValidation<Integer, String>> validate5 = isEven.lifting(5);
 
         assertThat(validate4, is(success(4)));
 
@@ -61,8 +61,8 @@ public class ValidatorTest {
                 Validators.rejectIf(divisibleBy(3), "fizz"),
                 Validators.rejectIf(divisibleBy(5), x -> String.format("%d is a buzz", x)));
 
-        Result<Integer, FailedValidation<Integer, String>> validate4 = fizzbuzz.apply(4);
-        Result<Integer, FailedValidation<Integer, String>> validate5 = fizzbuzz.apply(15);
+        Result<Integer, FailedValidation<Integer, String>> validate4 = fizzbuzz.lifting(4);
+        Result<Integer, FailedValidation<Integer, String>> validate5 = fizzbuzz.lifting(15);
 
         assertThat(validate4, is(success(4)));
 
@@ -75,8 +75,8 @@ public class ValidatorTest {
                 Validators.rejectIf(divisibleBy(3), "fizz"),
                 Validators.rejectIf(divisibleBy(5), x -> String.format("%d is a buzz", x))));
 
-        Result<Integer, FailedValidation<Integer, String>> validate5 = fizzbuzz.apply(5);
-        Result<Integer, FailedValidation<Integer, String>> validate15 = fizzbuzz.apply(15);
+        Result<Integer, FailedValidation<Integer, String>> validate5 = fizzbuzz.lifting(5);
+        Result<Integer, FailedValidation<Integer, String>> validate15 = fizzbuzz.lifting(15);
 
         assertThat(validate5, is(failure(5, "5 is a buzz")));
         assertThat(validate15, is(failure(15, "fizz")));
@@ -94,7 +94,7 @@ public class ValidatorTest {
 
         Validator<Integer, String> combined = Validators.compose(fizzbuzz, biglittle);
 
-        Result<Integer, FailedValidation<Integer, String>> validate15 = combined.apply(15);
+        Result<Integer, FailedValidation<Integer, String>> validate15 = combined.lifting(15);
 
         assertThat(validate15, is(failure(15, "fizz", "big")));
     }
@@ -108,8 +108,8 @@ public class ValidatorTest {
                     : Optional.of(String.format("Even numbers [%s] found", String.join(", ", evenNumbers)));
         });
 
-        Result<List<Integer>, FailedValidation<List<Integer>, String>> someOdds = containsEvens.apply(asList(1,3,7));
-        Result<List<Integer>, FailedValidation<List<Integer>, String>> mixedNums = containsEvens.apply(asList(1, 2, 3, 42, 99));
+        Result<List<Integer>, FailedValidation<List<Integer>, String>> someOdds = containsEvens.lifting(asList(1,3,7));
+        Result<List<Integer>, FailedValidation<List<Integer>, String>> mixedNums = containsEvens.lifting(asList(1, 2, 3, 42, 99));
 
         assertThat(someOdds, is(success(asList(1, 3, 7))));
 
@@ -123,8 +123,8 @@ public class ValidatorTest {
                 evens -> String.format("Even numbers [%s] found", String.join(", ", lazyMap(evens, Object::toString)))
         );
 
-        Result<List<Integer>, FailedValidation<List<Integer>, String>> someOdds = containsEvens.apply(asList(1,3,7));
-        Result<List<Integer>, FailedValidation<List<Integer>, String>> mixedNums = containsEvens.apply(asList(1, 2, 3, 42, 99));
+        Result<List<Integer>, FailedValidation<List<Integer>, String>> someOdds = containsEvens.lifting(asList(1,3,7));
+        Result<List<Integer>, FailedValidation<List<Integer>, String>> mixedNums = containsEvens.lifting(asList(1, 2, 3, 42, 99));
 
         assertThat(someOdds, is(success(asList(1, 3, 7))));
 
@@ -136,7 +136,7 @@ public class ValidatorTest {
         Validator<Integer, String> isEven = Validators.acceptIf(divisibleBy(2), "odd");
 
         List<Integer> evens = Stream.of(1,2,3,4,5,6,7,8,9)
-                .map(isEven)
+                .map(isEven::lifting)
                 .flatMap(Results.successes())
                 .collect(toList());
 
@@ -148,7 +148,7 @@ public class ValidatorTest {
         Validator<Integer, String> isEven = Validators.acceptIf(divisibleBy(2), "odd");
 
         List<FailedValidation<Integer, String>> odds = Stream.of(1, 2, 3, 4, 5, 6, 7, 8, 9)
-                .map(isEven)
+                .map(isEven::lifting)
                 .flatMap(Results.failures())
                 .collect(toList());
 
@@ -171,7 +171,7 @@ public class ValidatorTest {
                 Validators.rejectIf(multipleOf(7), x -> x + " divides by 7")
         );
 
-        Stream.of(1,2,3,4,5,6,7,8,9).map(isPrime).forEach(onSuccess(log));
+        Stream.of(1,2,3,4,5,6,7,8,9).map(isPrime::lifting).forEach(onSuccess(log));
 
         verify(log).accept(1);
         verify(log).accept(2);
@@ -192,7 +192,7 @@ public class ValidatorTest {
                 Validators.rejectIf(multipleOf(7), x -> x + " divides by 7")
         );
 
-        Stream.of(1,2,3,4,5,6,7,8,9).map(isPrime).forEach(onFailure(log));
+        Stream.of(1,2,3,4,5,6,7,8,9).map(isPrime::lifting).forEach(onFailure(log));
 
         verify(log).accept(validationFailure(4, "4 divides by 2"));
         verify(log).accept(validationFailure(6, "6 divides by 2", "6 divides by 3"));
@@ -212,7 +212,7 @@ public class ValidatorTest {
                 Validators.rejectIf(multipleOf(7), x -> x + " divides by 7")
         ));
 
-        Stream.of(1,2,3,4,5,6,7,8,9).map(isPrime).forEach(onFailure(log));
+        Stream.of(1,2,3,4,5,6,7,8,9).map(isPrime::lifting).forEach(onFailure(log));
 
         verify(log).accept(validationFailure(4, "4 divides by 2"));
         verify(log).accept(validationFailure(6, "6 divides by 2"));
@@ -232,8 +232,8 @@ public class ValidatorTest {
                 containsEvens
         );
 
-        Result<List<Integer>, FailedValidation<List<Integer>, String>> ofFiveNumbers = onlyChecksEvenLengthLists.apply(asList(1, 2, 3, 4, 5));
-        Result<List<Integer>, FailedValidation<List<Integer>, String>> ofSixNumbers = onlyChecksEvenLengthLists.apply(asList(1, 2, 3, 4, 5, 6));
+        Result<List<Integer>, FailedValidation<List<Integer>, String>> ofFiveNumbers = onlyChecksEvenLengthLists.lifting(asList(1, 2, 3, 4, 5));
+        Result<List<Integer>, FailedValidation<List<Integer>, String>> ofSixNumbers = onlyChecksEvenLengthLists.lifting(asList(1, 2, 3, 4, 5, 6));
 
         assertThat(ofFiveNumbers, is(success(asList(1,2,3,4,5))));
         assertThat(ofSixNumbers, is(failure(asList(1,2,3,4,5,6), "List contains even numbers")));
@@ -250,7 +250,7 @@ public class ValidatorTest {
                 Validators.rejectIf(multipleOf(7), x -> x + " divides by 7")
         );
 
-        Stream.of(1,2,3,4,5,6,7,8,9).map(isPrime).forEach(onFailure(v -> v.errors.forEach(e -> log.accept(v.value, e))));
+        Stream.of(1,2,3,4,5,6,7,8,9).map(isPrime::lifting).forEach(onFailure(v -> v.errors.forEach(e -> log.accept(v.value, e))));
 
         verify(log).accept(4, "4 divides by 2");
         verify(log).accept(6, "6 divides by 2");
@@ -271,7 +271,7 @@ public class ValidatorTest {
                 Validators.rejectIf(multipleOf(7), x -> x + " divides by 7")
         ), (num, msg) -> msg + ", oh boy");
 
-        Stream.of(1,2,3,4,5,6,7,8,9).map(isPrime).forEach(onFailure(v -> v.errors.forEach(e -> log.accept(v.value, e))));
+        Stream.of(1,2,3,4,5,6,7,8,9).map(isPrime::lifting).forEach(onFailure(v -> v.errors.forEach(e -> log.accept(v.value, e))));
 
         verify(log).accept(4, "4 divides by 2, oh boy");
         verify(log).accept(6, "6 divides by 2, oh boy");
@@ -292,7 +292,7 @@ public class ValidatorTest {
 
         Pair<List<Integer>, List<FailedValidation<Integer, String>>> results = Stream
                 .of(4,5,6,7,8)
-                .map(isPrime)
+                .map(isPrime::lifting)
                 .collect(split());
 
         assertThat(results.left, hasItems(5, 7));

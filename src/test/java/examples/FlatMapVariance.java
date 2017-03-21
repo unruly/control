@@ -44,21 +44,21 @@ public class FlatMapVariance {
             (fizzbuzz
                 .then(map(x -> Integer.toString(x)))
                 .then(Types.<List<String>>forFailures().convert())
-                .then(flatMap(under100)))
+                .then(flatMap(under100::lifting)))
                 .then(map(s -> "Great success! " + s))
                 .then(mapFailure(f -> "Big fails :( " + String.join(", ", f)))
                 .andFinally(collapse()));
     }
 
     public void canFlatmapErrorTypeOfFailedValidationIntoErrorTypeOfListOfString() {
-        Result<Integer, List<String>> foo = fizzbuzz.apply(4)
+        Result<Integer, List<String>> foo = fizzbuzz.lifting(4)
             .then(Types.<List<String>>forFailures().convert())
             .then(flatMap(this::listFactors));
     }
 
     public void canFlatmapErrorTypeOfListOfStringIntoErrorTypeOfFailedValidation() {
         Result<Integer, List<String>> foo = listFactors(5)
-            .then(flatMap(fizzbuzz));
+            .then(flatMap(fizzbuzz::lifting));
     }
 
     private Result<Integer, String> divideExactlyByTwo(int number) {

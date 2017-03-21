@@ -18,7 +18,7 @@ public class TryTest {
     @Test
     public void canHandleRuntimeExceptions() {
         Function<String, String> doSomething = tryTo(TryTest::throwsRuntimeException)
-            .andFinally(ifFailed(Exception::getMessage));
+            .andThen(ifFailed(Exception::getMessage));
 
         assertThat(doSomething.apply("throw"), is("This is a naughty method"));
         assertThat(doSomething.apply("play nice"), is("Today, I was good"));
@@ -27,7 +27,7 @@ public class TryTest {
     @Test
     public void canHandleCheckedExceptions() {
         Function<String, String> doSomething = tryTo(TryTest::throwsCheckedException)
-            .andFinally(ifFailed(Exception::getMessage));
+            .andThen(ifFailed(Exception::getMessage));
 
         assertThat(doSomething.apply("throw"), is("This is a naughty method"));
         assertThat(doSomething.apply("play nice"), is("Today, I was good"));
@@ -36,7 +36,7 @@ public class TryTest {
     @Test
     public void canSpecialiseHandlerForCheckedExceptions() {
         Function<String, String> doSomething = tryTo(TryTest::throwsCheckedException, CustomCheckedException.class)
-            .andFinally(ifFailed(CustomCheckedException::specialisedMethod));
+            .andThen(ifFailed(CustomCheckedException::specialisedMethod));
 
         assertThat(doSomething.apply("throw"), is("This is something only this exception can do"));
         assertThat(doSomething.apply("play nice"), is("Today, I was good"));
@@ -50,7 +50,7 @@ public class TryTest {
                 ifType(CustomCheckedException.class, CustomCheckedException::specialisedMethod),
                 ifType(IOException.class, ex -> "an IO exception, boo")
             )
-        ).andFinally(collapse());
+        ).andThen(collapse());
 
         assertThat(doSomething.apply("throw"), is("This is something only this exception can do"));
         assertThat(doSomething.apply("play nice"), is("Today, I was good"));
@@ -59,7 +59,7 @@ public class TryTest {
     @Test(expected = RuntimeException.class)
     public void rethrowsWhenSpecialisedHandlerForCheckedExceptionsEncountersRuntimeException() {
         Function<String, String> doSomething = tryTo(TryTest::throwsCheckedException, CustomCheckedException.class)
-            .andFinally(ifFailed(CustomCheckedException::specialisedMethod));
+            .andThen(ifFailed(CustomCheckedException::specialisedMethod));
 
         doSomething.apply("sneakyThrow");
     }
@@ -73,7 +73,7 @@ public class TryTest {
                     ifType(CustomCheckedException.class, CustomCheckedException::specialisedMethod),
                     ifType(IOException.class, ex -> "an IO exception, boo")
             )
-        ).andFinally(collapse());
+        ).andThen(collapse());
 
         String sneakyThrow = doSomething.apply("sneakyThrow");
     }

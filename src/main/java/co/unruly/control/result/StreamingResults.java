@@ -10,7 +10,7 @@ import static co.unruly.control.Unit.UNIT;
 
 public interface StreamingResults {
 
-    static <I, O, X extends Exception> Attempt<I, O, Exception, Exception> tryTo(ThrowingLambdas.ThrowingFunction<I, O, X> f) {
+    static <I, O, X extends Exception> Function<I, Result<O, Exception>> tryTo(ThrowingLambdas.ThrowingFunction<I, O, X> f) {
         return Try.tryTo(f);
     }
 
@@ -27,11 +27,11 @@ public interface StreamingResults {
     }
 
     static <S, F, EF extends F> Function<Result<S, F>, Result<S, F>> recoverIf(Class<EF> clazz, Function<EF, S> recoveryFunction) {
-        return Match.<S, F, EF>ifType(clazz, recoveryFunction)::onResult;
+        return Match.ifType(clazz, recoveryFunction);
     }
 
     static <S, F, EF extends F> Function<Result<S, F>, Result<S, F>> recover(EndoAttempt<S, F> recoveryFunction) {
-        return recoveryFunction::onResult;
+        return recoveryFunction;
     }
 
     static <FS, IS extends FS, F, OS extends FS> Function<Result<IS, F>, FS> recoverAll(Function<F, OS> recovery) {

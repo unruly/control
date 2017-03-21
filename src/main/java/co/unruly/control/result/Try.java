@@ -15,20 +15,20 @@ import static java.util.function.Function.identity;
 
 public class Try {
 
-    public static <I, O, X extends Exception> Attempt<I, O, Exception, Exception> tryTo(ThrowingFunction<I, O, X> f) {
+    public static <I, O, X extends Exception> Function<I, Result<O, Exception>> tryTo(ThrowingFunction<I, O, X> f) {
         return tryTo(f, identity());
     }
 
-    public static <I, O, F, X extends Exception> Attempt<I, O, F, F> tryTo(ThrowingFunction<I, O, X> f, Function<Exception, F> exceptionHandler) {
-        return flatTry(f.andThen(Result::success), exceptionHandler);
+    public static <I, O, F, X extends Exception> Function<I, Result<O, F>> tryTo(ThrowingFunction<I, O, X> f, Function<Exception, F> exceptionHandler) {
+        return flatTry(f.andThen(Result::success), exceptionHandler)::lifting;
     }
 
-    public static <I, O, R extends Exception, X extends R> Attempt<I, O, R, R> tryTo(ThrowingFunction<I, O, X> f, Class<R> checkedType) {
-        return tryTo(f, checkedType, identity());
+    public static <I, O, R extends Exception, X extends R> Function<I, Result<O, R>> tryTo(ThrowingFunction<I, O, X> f, Class<R> checkedType) {
+        return tryTo(f, checkedType, identity())::lifting;
     }
 
     public static <I, O, F, R extends Exception, X extends R> Attempt<I, O, F, F> tryTo(ThrowingFunction<I, O, X> f, Class<R> checkedType, Function<R, F> exceptionHandler) {
-        return flatMap(tryChecked(f, checkedType).then(mapFailure(exceptionHandler)));
+        return flatMap(tryChecked(f, checkedType).then(mapFailure(exceptionHandler))::lifting);
     }
 
     public static <I, S, X extends Exception> Attempt<I, S, Exception, Exception> flatTry(ThrowingLambdas.ThrowingFunction<I, Result<S, Exception>, X> f) {
@@ -44,6 +44,7 @@ public class Try {
      *
      * If the exception does *not* match any of the clauses, then it is rethrown, wrapped in a RuntimeException
      */
+    @SuppressWarnings("SafeVarargs")
     public static <R> Function<Exception, R> catching(EndoAttempt<R, Exception> ...catchClauses) {
         return match(catchClauses).otherwise(ex -> { throw new RuntimeException("Could not catch exception type", ex); });
     }
@@ -53,7 +54,7 @@ public class Try {
             ifType(checkedType, ex -> ex)
         ).otherwise(ex -> { throw (RuntimeException)ex;});
 
-        return tryTo(f, identity()).then(mapFailure(castToCheckedType));
+        return flatMap(tryTo(f, identity())).then(mapFailure(castToCheckedType));
     }
 
 

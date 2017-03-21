@@ -26,7 +26,7 @@ public class Match {
      */
     @SafeVarargs
     public static <I, O> MatchAttempt<I, O> match(EndoAttempt<O, I>... potentialMatchers) {
-        return f -> attemptMatch(potentialMatchers).andFinally(ifFailed(f));
+        return f -> attemptMatch(potentialMatchers).andFinally(ifFailed(f))::lifting;
     }
 
     /**
@@ -37,7 +37,7 @@ public class Match {
      */
     @SafeVarargs
     public static <I, O> BoundMatchAttempt<I, O> matchValue(I inputValue, EndoAttempt<O, I>... potentialMatchers) {
-        return f -> attemptMatch(potentialMatchers).andFinally(ifFailed(f)).apply(inputValue);
+        return f -> attemptMatch(potentialMatchers).andFinally(ifFailed(f)).lifting(inputValue);
     }
 
     /**

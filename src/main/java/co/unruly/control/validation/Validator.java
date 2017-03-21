@@ -14,7 +14,7 @@ import static java.util.stream.Collectors.toList;
 @FunctionalInterface
 public interface Validator<T, E> extends EndoAttempt<T, FailedValidation<T, E>> {
 
-    default Result<T, FailedValidation<T, E>> apply(T item) {
+    default Result<T, FailedValidation<T, E>> lifting(T item) {
         LinkList<E> errors = LinkLists.of(validate(item).collect(toList()));
         return errors.read(
                 (x, xs) -> Result.failure(new FailedValidation<>(item, cons(x, xs))),
@@ -22,9 +22,9 @@ public interface Validator<T, E> extends EndoAttempt<T, FailedValidation<T, E>> 
         );
     }
 
-    default Result<T, FailedValidation<T, E>> onResult(Result<T, FailedValidation<T, E>> r) {
+    default Result<T, FailedValidation<T, E>> apply(Result<T, FailedValidation<T, E>> r) {
         return r.either(
-            this::apply,
+            this::lifting,
             failure -> Result.failure(new FailedValidation<>(
                 failure.value,
                 cons(failure.errors.first, LinkLists.eagerConcat(

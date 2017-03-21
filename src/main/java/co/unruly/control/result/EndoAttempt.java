@@ -17,7 +17,7 @@ public interface EndoAttempt<S, F> extends Attempt<S, S, F, F> {
      * Compose two EndoAttempts together, executing first this EndoAttempt and then the provided EndoAttempt.
      */
     default EndoAttempt<S, F> then(EndoAttempt<S, F> f) {
-        return r -> f.onResult(onResult(r));
+        return f.compose(this)::apply;
     }
 
     static <S, F>  EndoAttempt<S, F> identity() {
