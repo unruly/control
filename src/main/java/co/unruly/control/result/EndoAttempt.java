@@ -19,12 +19,4 @@ public interface EndoAttempt<S, F> extends Attempt<S, S, F, F> {
     default EndoAttempt<S, F> then(EndoAttempt<S, F> f) {
         return f.compose(this)::apply;
     }
-
-    static <S, F>  EndoAttempt<S, F> identity() {
-        return result -> result;
-    }
-
-    static <S, F> EndoAttempt<S, F> compose(EndoAttempt<S, F> ...attempts) {
-        return Stream.of(attempts).reduce(EndoAttempt.identity(), EndoAttempt::then);
-    }
 }

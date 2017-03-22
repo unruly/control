@@ -1,11 +1,13 @@
 package co.unruly.control.result;
 
+import co.unruly.control.HigherOrderFunctions;
+
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import static co.unruly.control.HigherOrderFunctions.compose;
 import static co.unruly.control.result.Casts.cast;
-import static co.unruly.control.result.EndoAttempt.compose;
 import static co.unruly.control.result.Result.failure;
 import static co.unruly.control.result.Results.*;
 
@@ -26,7 +28,10 @@ public class Match {
      */
     @SafeVarargs
     public static <I, O> MatchAttempt<I, O> match(EndoAttempt<O, I>... potentialMatchers) {
-        return f -> attemptMatch(potentialMatchers).andFinally(ifFailed(f))::lifting;
+        return f -> {
+            Function<Result<O, I>, O> after = ifFailed(f);
+            return attemptMatch(potentialMatchers).andThen(after).compose(Result::success);
+        };
     }
 
     /**
@@ -37,7 +42,7 @@ public class Match {
      */
     @SafeVarargs
     public static <I, O> BoundMatchAttempt<I, O> matchValue(I inputValue, EndoAttempt<O, I>... potentialMatchers) {
-        return f -> attemptMatch(potentialMatchers).andFinally(ifFailed(f)).lifting(inputValue);
+        return f -> attemptMatch(potentialMatchers).andThen(ifFailed(f)).apply(Result.success(inputValue));
     }
 
     /**
@@ -90,8 +95,8 @@ public class Match {
      * Internal workings to build a regular function out of the Attempt plumbing
      */
     @SafeVarargs
-    private static <S, F> Attempt<S, F, F, S> attemptMatch(EndoAttempt<F, S>... potentialMatches) {
-        return Results.<S, F>invert().then(compose(potentialMatches));
+    private static <S, F> Function<Result<S, F>, Result<F, S>> attemptMatch(EndoAttempt<F, S>... potentialMatches) {
+        return Results.<S, F>invert().andThen(compose(potentialMatches));
     }
 
     @FunctionalInterface
