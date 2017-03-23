@@ -30,7 +30,7 @@ public interface StreamingResults {
         return Match.ifType(clazz, recoveryFunction);
     }
 
-    static <S, F, EF extends F> Function<Result<S, F>, Result<S, F>> recover(EndoAttempt<S, F> recoveryFunction) {
+    static <S, F, EF extends F> Function<Result<S, F>, Result<S, F>> recover(Function<Result<S, F>, Result<S, F>> recoveryFunction) {
         return recoveryFunction;
     }
 

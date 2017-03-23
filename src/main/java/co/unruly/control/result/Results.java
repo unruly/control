@@ -27,7 +27,7 @@ public class Results {
      * Allows introduction of types, if the early operations in a chain are
      * unable to infer types and the notation is preferable to explicit generics
      */
-    public static <S, F> EndoAttempt<S, F> startingWith(Class<S> s, Class<F> f) {
+    public static <S, F> Function<Result<S, F>, Result<S, F>> startingWith(Class<S> s, Class<F> f) {
         return r -> r;
     }
 
@@ -35,7 +35,7 @@ public class Results {
      * Fires an event if the result is a success, returning the unchanged Result
      * in either case
      */
-    public static <S, F> EndoAttempt<S, F> onSuccess(Consumer<S> c) {
+    public static <S, F> ConsumableFunction<Result<S, F>, Result<S, F>> onSuccess(Consumer<S> c) {
         return r -> {
             r.either(functify(c), Unit::noOp);
             return r;
@@ -46,7 +46,7 @@ public class Results {
      * Fires an event if the result is a failure, returning the unchanged Result
      * in either case
      */
-    public static <S, F> EndoAttempt<S, F> onFailure(Consumer<F> c) {
+    public static <S, F> ConsumableFunction<Result<S, F>, Result<S, F>> onFailure(Consumer<F> c) {
         return r -> {
             r.either(Unit::noOp, functify(c));
             return r;
@@ -90,7 +90,7 @@ public class Results {
     /**
      * Flips an attempt, so successes are now considered failures and vice versa
      */
-    public static <S, F> Attempt<S, F, F, S> invert() {
+    public static <S, F> Function<Result<S, F>, Result<F, S>> invert() {
         return r -> r.either(Result::failure, Result::success);
     }
 

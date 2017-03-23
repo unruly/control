@@ -45,7 +45,7 @@ public class Try {
      * If the exception does *not* match any of the clauses, then it is rethrown, wrapped in a RuntimeException
      */
     @SuppressWarnings("SafeVarargs")
-    public static <R> Function<Exception, R> catching(EndoAttempt<R, Exception> ...catchClauses) {
+    public static <R> Function<Exception, R> catching(Function<Result<R, Exception>, Result<R, Exception>> ...catchClauses) {
         return match(catchClauses).otherwise(ex -> { throw new RuntimeException("Could not catch exception type", ex); });
     }
 

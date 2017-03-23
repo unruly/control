@@ -1,7 +1,5 @@
 package co.unruly.control.result;
 
-import co.unruly.control.HigherOrderFunctions;
-
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -27,7 +25,7 @@ public class Match {
      * required.
      */
     @SafeVarargs
-    public static <I, O> MatchAttempt<I, O> match(EndoAttempt<O, I>... potentialMatchers) {
+    public static <I, O> MatchAttempt<I, O> match(Function<Result<O, I>, Result<O, I>>... potentialMatchers) {
         return f -> {
             Function<Result<O, I>, O> after = ifFailed(f);
             return attemptMatch(potentialMatchers).andThen(after).compose(Result::success);
@@ -41,7 +39,7 @@ public class Match {
      * required.
      */
     @SafeVarargs
-    public static <I, O> BoundMatchAttempt<I, O> matchValue(I inputValue, EndoAttempt<O, I>... potentialMatchers) {
+    public static <I, O> BoundMatchAttempt<I, O> matchValue(I inputValue, Function<Result<O, I>, Result<O, I>>... potentialMatchers) {
         return f -> attemptMatch(potentialMatchers).andThen(ifFailed(f)).apply(Result.success(inputValue));
     }
 
@@ -50,7 +48,7 @@ public class Match {
      * The handler function provided is flow-typed to take arguments of the specified class,
      * not the general type of objects being matched.
      */
-    public static <S, F, F1 extends F> EndoAttempt<S, F> ifType(Class<F1> type, Function<F1, S> function) {
+    public static <S, F, F1 extends F> Function<Result<S, F>, Result<S, F>> ifType(Class<F1> type, Function<F1, S> function) {
         return x -> x.then(flatMapFailure(
                 failure -> cast(failure, type)
                     .then(flatMap(matchedType -> Result.success(function.apply(matchedType))))
@@ -61,7 +59,7 @@ public class Match {
      * Matches the value if it passes the provided predicate, and applies the handler function
      * provided to it.
      */
-    public static <S, F> EndoAttempt<S, F> ifIs(Predicate<F> predicate, Function<F, S> function) {
+    public static <S, F> Function<Result<S, F>, Result<S, F>> ifIs(Predicate<F> predicate, Function<F, S> function) {
         return x -> x.then(flatMapFailure(
                 failure -> predicate.test(failure)
                     ? Result.success(function.apply(failure))
@@ -73,7 +71,7 @@ public class Match {
      * Matches the value if it is equal to the provided value, and applies the handler
      * function to it.
      */
-    public static <S, F> EndoAttempt<S, F> ifEquals(F value, Function<F, S> function) {
+    public static <S, F> Function<Result<S, F>, Result<S, F>> ifEquals(F value, Function<F, S> function) {
         return ifIs(value::equals, function);
     }
 
@@ -81,7 +79,7 @@ public class Match {
      * Matches the value if the provided function yields an Optional whose value is
      * present, returning the value in that Optional.
      */
-    public static <S, F> EndoAttempt<S, F> ifPresent(Function<F, Optional<S>> successProvider) {
+    public static <S, F> Function<Result<S, F>, Result<S, F>> ifPresent(Function<F, Optional<S>> successProvider) {
         return r -> r.then(flatMapFailure(
             failure -> successProvider
                 .apply(failure)
@@ -95,7 +93,7 @@ public class Match {
      * Internal workings to build a regular function out of the Attempt plumbing
      */
     @SafeVarargs
-    private static <S, F> Function<Result<S, F>, Result<F, S>> attemptMatch(EndoAttempt<F, S>... potentialMatches) {
+    private static <S, F> Function<Result<S, F>, Result<F, S>> attemptMatch(Function<Result<F, S>, Result<F, S>>... potentialMatches) {
         return Results.<S, F>invert().andThen(compose(potentialMatches));
     }
 
