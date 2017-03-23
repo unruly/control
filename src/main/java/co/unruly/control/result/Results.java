@@ -13,6 +13,7 @@ import java.util.stream.Collector;
 import java.util.stream.Stream;
 
 import static co.unruly.control.Unit.functify;
+import static co.unruly.control.result.Result.success;
 import static java.util.function.Function.identity;
 
 public class Results {
@@ -201,7 +202,7 @@ public class Results {
             public <C> Result<C, F> using(BiFunction<A, B, C> combiner) {
                 return result.either(
                     s1 -> secondArgument.either(
-                        s2 -> Result.success(combiner.apply(s1, s2)),
+                        s2 -> success(combiner.apply(s1, s2)),
                         Result::failure
                     ),
                     Result::failure
@@ -218,8 +219,8 @@ public class Results {
     /**
      * Takes a value and immediately applies a ResultMapper to it.
      */
-    public static <S, F, T> T with(S input, ResultMapper<S, F, T> resultMapper) {
-        return resultMapper.lifting(input);
+    public static <S, F, T> T with(final S input, final Function<Result<S, F>, T> resultMapper) {
+        return resultMapper.apply(success(input));
     }
 
     private static <R, T extends R> R upcast(T fv) {

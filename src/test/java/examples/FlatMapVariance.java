@@ -42,12 +42,12 @@ public class FlatMapVariance {
 
         return with(m,
                 fizzbuzz
-                    .then(map(x -> Integer.toString(x)))
-                    .then(Types.<List<String>>forFailures().convert())
-                    .then(flatMap(under100::lifting))
-                    .then(map(s -> "Great success! " + s))
-                    .then(mapFailure(f -> "Big fails :( " + String.join(", ", f)))
-                    .andFinally(collapse()));
+                    .andThen(map(x -> Integer.toString(x)))
+                    .andThen(Types.<List<String>>forFailures().convert())
+                    .andThen(flatMap(under100::lifting))
+                    .andThen(map(s -> "Great success! " + s))
+                    .andThen(mapFailure(f -> "Big fails :( " + String.join(", ", f)))
+                    .andThen(collapse()));
     }
 
     public void canFlatmapErrorTypeOfFailedValidationIntoErrorTypeOfListOfString() {
