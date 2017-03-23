@@ -58,7 +58,7 @@ public class Results {
      * If the result is a Success, applies the given function to that value and wraps
      * it in a new Success. Otherwise, returns the Failure
      */
-    public static <S, S1, F> Attempt<S, S1, F, F> map(Function<S, S1> f) {
+    public static <S, S1, F> Function<Result<S, F>, Result<S1, F>> map(Function<S, S1> f) {
         return flatMap(f.andThen(Result::success));
     }
 
@@ -66,7 +66,7 @@ public class Results {
      * If the result is a Success, applies the given function to that value (which
      * could return either a Success or Failure). Otherwise, returns the Failure.
      */
-    public static <S, S1, F, FF extends F> Attempt<S, S1, F, F> flatMap(Function<S, Result<S1, FF>> f) {
+    public static <S, S1, F, FF extends F> Function<Result<S, F>, Result<S1, F>> flatMap(Function<S, Result<S1, FF>> f) {
         return r -> r.either(
             success -> f.apply(success).then(mapFailure(Results::upcast)),
             Result::failure);
@@ -76,7 +76,7 @@ public class Results {
      * If the result is a Failure, applies the given function to that value and wraps
      * it in a new Failure. Otherwise, returns the Success
      */
-    public static <S, F, F1> Attempt<S, S, F, F1> mapFailure(Function<F, F1> f) {
+    public static <S, F, F1> Function<Result<S, F>, Result<S, F1>> mapFailure(Function<F, F1> f) {
         return flatMapFailure(f.andThen(Result::failure));
     }
 
@@ -84,7 +84,7 @@ public class Results {
      * If the result is a Failure, applies the given function to that value (which
      * could return either a Success or Failure). Otherwise, returns the Success.
      */
-    public static <S, F, F1> Attempt<S, S, F, F1> flatMapFailure(Function<F, Result<S, F1>> f) {
+    public static <S, F, F1> Function<Result<S, F>, Result<S, F1>> flatMapFailure(Function<F, Result<S, F1>> f) {
         return r -> r.either(Result::success, f);
     }
 

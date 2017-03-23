@@ -89,9 +89,6 @@ public class Match {
         );
     }
 
-    /**
-     * Internal workings to build a regular function out of the Attempt plumbing
-     */
     @SafeVarargs
     private static <S, F> Function<Result<S, F>, Result<F, S>> attemptMatch(Function<Result<F, S>, Result<F, S>>... potentialMatches) {
         return Results.<S, F>invert().andThen(compose(potentialMatches));
