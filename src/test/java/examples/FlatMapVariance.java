@@ -33,21 +33,21 @@ public class FlatMapVariance {
 //            .then(flatMap(this::listFactors));
 //    }
 
-    public String isThisAnInterview(int m) {
-        Validator<Integer, String> fizzbuzz = Validators.compose(
+    public String isThisAnInterview(final int m) {
+        final Validator<Integer, String> fizzbuzz = Validators.compose(
             rejectIf(n -> n % 3 == 0, "fizz"),
             rejectIf(n -> n % 5 == 0, "buzz"));
 
         Validator<String, String> under100 = rejectIf(s -> s.length() > 2, s -> s + " is too damn high");
 
         return with(m,
-            (fizzbuzz
-                .then(map(x -> Integer.toString(x)))
-                .then(Types.<List<String>>forFailures().convert())
-                .then(flatMap(under100::lifting)))
-                .then(map(s -> "Great success! " + s))
-                .then(mapFailure(f -> "Big fails :( " + String.join(", ", f)))
-                .andFinally(collapse()));
+                fizzbuzz
+                    .then(map(x -> Integer.toString(x)))
+                    .then(Types.<List<String>>forFailures().convert())
+                    .then(flatMap(under100::lifting))
+                    .then(map(s -> "Great success! " + s))
+                    .then(mapFailure(f -> "Big fails :( " + String.join(", ", f)))
+                    .andFinally(collapse()));
     }
 
     public void canFlatmapErrorTypeOfFailedValidationIntoErrorTypeOfListOfString() {
