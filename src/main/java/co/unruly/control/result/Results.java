@@ -105,8 +105,8 @@ public class Results {
      * Converts a Result where the success and failure types match
      * into the success or failure value, as appropriate
      */
-    public static <T> ResultMapper<T, T, T> collapse() {
-        return ResultMapper.of(identity(), identity());
+    public static <T> Function<Result<T, T>, T> collapse() {
+        return r -> r.either(identity(), identity());
     }
 
     /**
@@ -114,32 +114,35 @@ public class Results {
      * returns the Success value or throws the Exception (wrapped in a
      * RuntimeException)
      */
-    public static <T> ResultMapper<T, Exception, T> getOrThrow() {
-        return ResultMapper.of(identity(), ex -> { throw new RuntimeException(ex); });
+    public static <T> Function<Result<T, Exception>, T> getOrThrow() {
+        Function<Exception, T> onFailure = ex -> { throw new RuntimeException(ex); };
+        return r -> r.either(identity(), onFailure);
     }
 
     /**
      * Returns the success value, if this is a Success, or the result of calling the
      * provided function on the failure value if this is a failure
      */
-    public static <OS, F, IS extends OS> ResultMapper<IS, F, OS> ifFailed(Function<F, OS> supplier) {
-        return ResultMapper.of(i->i, supplier);
+    public static <OS, F, IS extends OS> Function<Result<IS, F>, OS> ifFailed(Function<F, OS> supplier) {
+        Function<IS, OS> onSuccess = i->i;
+        return r -> r.either(onSuccess, supplier);
     }
 
     /**
      * Converts a Result into either an Optional containing the success
      * value, or an empty Optional if it's a failure.
      */
-    public static <S, F> ResultMapper<S, F, Optional<S>> asOptional() {
-        return ResultMapper.of(Optional::of, __ -> Optional.empty());
+    public static <S, F> Function<Result<S, F>, Optional<S>> asOptional() {
+        return result -> result.either(Optional::of, __ -> Optional.empty());
     }
 
     /**
      * Converts a Result into either an Optional containing the failure
      * value, or an empty Optional if it's a success.
      */
-    public static <S, F> ResultMapper<S, F, Optional<F>> failureAsOptional() {
-        return ResultMapper.of(__ -> Optional.empty(), Optional::of);
+    public static <S, F> Function<Result<S, F>, Optional<F>> failureAsOptional() {
+        Function<S, Optional<F>> onSuccess = __ -> Optional.empty();
+        return r -> r.either(onSuccess, Optional::of);
     }
 
 
@@ -195,7 +198,7 @@ public class Results {
      * If either or both arguments are Failures, then this returns the first failure
      * it encountered.
      */
-    public static <A, B, F> ResultMapper<A, F, MergeableResults<A, B, F>> combineWith(Result<B, F> secondArgument) {
+    public static <A, B, F> Function<Result<A, F>, MergeableResults<A, B, F>> combineWith(Result<B, F> secondArgument) {
         // ugh ugh ugh we need an abstract class because otherwise it can't infer generics properly can i be sick now? ta
         return result -> new MergeableResults<A, B, F>() {
             @Override
@@ -217,7 +220,7 @@ public class Results {
     }
 
     /**
-     * Takes a value and immediately applies a ResultMapper to it.
+     * Takes a value, wraps it in a Success, and applies a function to it.
      */
     public static <S, F, T> T with(final S input, final Function<Result<S, F>, T> resultMapper) {
         return resultMapper.apply(success(input));

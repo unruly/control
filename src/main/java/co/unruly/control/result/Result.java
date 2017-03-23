@@ -61,8 +61,7 @@ public abstract class Result<S, F>  {
     public abstract <R, R1 extends R, R2 extends R> R either(Function<S, R1> onSuccess, Function<F, R2> onFailure);
 
     /**
-     * Applies a ResultMapper (a function taking a Result) to this Result. This permits
-     * inverting the calling convention, so that instead of the following:
+     * Applies a function to this Result. This permits inverting the calling convention, so that instead of the following:
      * <pre>
      * {@code
      * Result<Shop, String> shop;
