@@ -219,13 +219,6 @@ public class Results {
         <C> Result<C, F> using(BiFunction<A, B, C> combiner);
     }
 
-    /**
-     * Takes a value, wraps it in a Success, and applies a function to it.
-     */
-    public static <S, F, T> T with(final S input, final Function<Result<S, F>, T> resultMapper) {
-        return resultMapper.apply(success(input));
-    }
-
     private static <R, T extends R> R upcast(T fv) {
         return fv;
     }

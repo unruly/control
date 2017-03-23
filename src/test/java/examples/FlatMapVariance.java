@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static co.unruly.control.HigherOrderFunctions.with;
 import static co.unruly.control.result.Results.*;
 import static co.unruly.control.validation.Validators.rejectIf;
 
@@ -40,25 +41,24 @@ public class FlatMapVariance {
 
         Validator<String, String> under100 = rejectIf(s -> s.length() > 2, s -> s + " is too damn high");
 
-        return with(m,
-                fizzbuzz
-                    .andThen(map(x -> Integer.toString(x)))
-                    .andThen(Types.<List<String>>forFailures().convert())
-                    .andThen(flatMap(under100::lifting))
-                    .andThen(map(s -> "Great success! " + s))
-                    .andThen(mapFailure(f -> "Big fails :( " + String.join(", ", f)))
-                    .andThen(collapse()));
+        return with(m, fizzbuzz
+                .andThen(map(x -> Integer.toString(x)))
+                .andThen(Types.<List<String>>forFailures().convert())
+                .andThen(flatMap(under100))
+                .andThen(map(s -> "Great success! " + s))
+                .andThen(mapFailure(f -> "Big fails :( " + String.join(", ", f)))
+                .andThen(collapse()));
     }
 
     public void canFlatmapErrorTypeOfFailedValidationIntoErrorTypeOfListOfString() {
-        Result<Integer, List<String>> foo = fizzbuzz.lifting(4)
+        Result<Integer, List<String>> foo = fizzbuzz.apply(4)
             .then(Types.<List<String>>forFailures().convert())
             .then(flatMap(this::listFactors));
     }
 
     public void canFlatmapErrorTypeOfListOfStringIntoErrorTypeOfFailedValidation() {
         Result<Integer, List<String>> foo = listFactors(5)
-            .then(flatMap(fizzbuzz::lifting));
+            .then(flatMap((item) -> fizzbuzz.apply(item)));
     }
 
     private Result<Integer, String> divideExactlyByTwo(int number) {

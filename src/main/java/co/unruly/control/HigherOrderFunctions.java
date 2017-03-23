@@ -22,4 +22,12 @@ public class HigherOrderFunctions {
     public static <T> Function<T, T> compose(Function<T, T>... functions) {
         return Stream.of(functions).reduce(identity(), Function::andThen);
     }
+
+    /**
+     * Takes a value and applies a function to it.
+     */
+    public static <S, F, T> T with(final S input, final Function<S, T> resultMapper) {
+        return resultMapper.apply(input);
+    }
+
 }
