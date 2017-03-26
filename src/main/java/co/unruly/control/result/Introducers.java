@@ -99,7 +99,8 @@ public interface Introducers {
 
     /**
      * Takes a class and returns a function which takes a value, attempts to cast it to that class, and returns
-     * a Success of the provided type if it's a member of it, and a Failure of the known type otherwise.
+     * a Success of the provided type if it's a member of it, and a Failure of the known type otherwise, in both
+     * cases containing the input value.
      */
     static <IS, OS extends IS> Function<IS, Result<OS, IS>> castTo(Class<OS> targetClass) {
         return input -> targetClass.isAssignableFrom(input.getClass())
@@ -107,16 +108,33 @@ public interface Introducers {
             : Result.failure(input);
     }
 
+    /**
+     * Takes a class and a mapping function and returns a function which takes a value and, if it's of the
+     * provided class, applies the mapping function to it and returns it as a Success, otherwise returning
+     * the input value as a Failure.
+     */
     static <S, F, TF extends F> Function<F, Result<S, F>> ifType(Class<TF> targetClass, Function<TF, S> mapper) {
         return Introducers.<F, TF>castTo(targetClass).andThen(Transformers.onSuccess(mapper));
     }
 
+
+    /**
+     * Takes a predicate and a mapping function and returns a function which takes a value and, if it satisfies
+     * the predicate, applies the mapping function to it and returns it as a Success, otherwise returning
+     * the input value as a Failure.
+     */
     static <S, F> Function<F, Result<S, F>> ifIs(Predicate<F> test, Function<F, S> mapper) {
         return input -> test.test(input)
             ? Result.success(mapper.apply(input))
             : Result.failure(input);
     }
 
+
+    /**
+     * Takes a value and a mapping function and returns a function which takes a value and, if it is equal to
+     * the provided value, applies the mapping function to it and returns it as a Success, otherwise returning
+     * the input value as a Failure.
+     */
     static <S, F> Function<F, Result<S, F>> ifEquals(F expectedValue, Function<F, S> mapper) {
         return input -> expectedValue.equals(input)
             ? Result.success(mapper.apply(input))
