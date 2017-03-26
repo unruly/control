@@ -10,4 +10,7 @@ public interface ConsumableFunction<A, B> extends Function<A, B>, Consumer<A> {
         apply(value);
     }
 
+    static <A, B> ConsumableFunction<A, B> of(Function<A, B> f) {
+        return f::apply;
+    }
 }

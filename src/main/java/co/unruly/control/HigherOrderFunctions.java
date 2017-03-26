@@ -1,6 +1,7 @@
 package co.unruly.control;
 
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -17,7 +18,7 @@ public class HigherOrderFunctions {
 
     /**
      * Takes a list of functions (which take and return the same type) and composes
-     * them into a single function
+     * them into a single function, applying the provided functions in order
      */
     public static <T> Function<T, T> compose(Function<T, T>... functions) {
         return Stream.of(functions).reduce(identity(), Function::andThen);
@@ -28,6 +29,16 @@ public class HigherOrderFunctions {
      */
     public static <S, F, T> T with(final S input, final Function<S, T> resultMapper) {
         return resultMapper.apply(input);
+    }
+
+    /**
+     * Turns a Consumer into a Function which applies the consumer and returns the input
+     */
+    public static <T> Function<T, T> peek(Consumer<T> action) {
+        return t -> {
+            action.accept(t);
+            return t;
+        };
     }
 
 }

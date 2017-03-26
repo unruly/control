@@ -1,6 +1,6 @@
 package co.unruly.control.result;
 
-public class Casts {
+public interface Casts {
 
     /**
      * Attempts to cast a value to a given subclass. If the provided value is an instance of the
@@ -8,8 +8,12 @@ public class Casts {
      * a Failure of that value.
      */
     @SuppressWarnings("unchecked")
-    public static <T, S extends T> Result<S, T> cast(T t, Class<S> subclass) {
+    static <T, S extends T> Result<S, T> cast(T t, Class<S> subclass) {
         return subclass.isAssignableFrom(t.getClass()) ? Result.success((S)t) : Result.failure(t);
+    }
+
+    static <R, T extends R> R upcast(T fv) {
+        return fv;
     }
 
 }

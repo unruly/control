@@ -219,7 +219,7 @@ public class Results {
         <C> Result<C, F> using(BiFunction<A, B, C> combiner);
     }
 
-    private static <R, T extends R> R upcast(T fv) {
+    static <R, T extends R> R upcast(T fv) {
         return fv;
     }
 

@@ -6,10 +6,10 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static co.unruly.control.result.Match.ifIs;
-import static co.unruly.control.result.Match.ifType;
-import static co.unruly.control.result.StreamingResults.*;
-import static co.unruly.control.result.Try.tryTo;
+import static co.unruly.control.result.Introducers.ifType;
+import static co.unruly.control.result.Introducers.tryTo;
+import static co.unruly.control.result.Resolvers.ifFailed;
+import static co.unruly.control.result.Transformers.*;
 import static java.util.stream.Collectors.toList;
 
 public class ExceptionsInStreamsHandling {
@@ -17,19 +17,17 @@ public class ExceptionsInStreamsHandling {
 
     @Test
     public void handling_exceptions_with_result_example() {
-
         List<Integer> customerAges = Stream.of("Bob", "Bill")
             .map(tryTo(this::findCustomerByName))
-            .peek(onSuccess(this::sendEmailUpdateTo))
+            .peek(onSuccessDo(this::sendEmailUpdateTo))
             .map(onSuccess(Customer::age))
-            .map(recoverIf(NoCustomerWithThatName.class, error -> {
-                log("Customer not found :(");
+            .map(attemptRecovery(ifType(NoCustomerWithThatName.class, error -> {
+                log("Customer not found :(@");
                 return -1;
-            }))
-            .map(recoverIf(IOException.class, error -> -2))
-            .map(recoverAll(__ -> -127))
+            })))
+            .map(attemptRecovery(ifType(IOException.class, error -> -2)))
+            .map(ifFailed(__ -> -127))
             .collect(toList());
-
     }
 
     @Test
@@ -37,16 +35,15 @@ public class ExceptionsInStreamsHandling {
 
         List<Integer> customerValues = Stream.of("Bob", "Bill")
             .map(tryTo(this::findCustomerByName))
-            .peek(onSuccess(this::sendEmailUpdateTo))
+            .peek(onSuccessDo(this::sendEmailUpdateTo))
             .map(onSuccessTry(Customer::calculateValue))
-            .map(recoverIf(NoCustomerWithThatName.class, error -> {
+            .map(attemptRecovery(ifType(NoCustomerWithThatName.class, error -> {
                 log("Customer not found :(");
                 return -1;
-            }))
-            .map(recover(ifType(IOException.class, error -> -2)))
-            .map(recoverAll(() -> -127))
+            })))
+            .map(attemptRecovery(ifType(IOException.class, error -> -2)))
+            .map(ifFailed(__ -> -127))
             .collect(toList());
-
     }
 
 
