@@ -1,8 +1,8 @@
 package co.unruly.control.result;
 
+import co.unruly.control.ConsumableFunction;
 import co.unruly.control.HigherOrderFunctions;
 import co.unruly.control.ThrowingLambdas;
-import co.unruly.control.Unit;
 
 import java.util.function.Consumer;
 import java.util.function.Function;

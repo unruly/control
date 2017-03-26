@@ -1,4 +1,4 @@
-package co.unruly.control.result;
+package co.unruly.control;
 
 import java.util.function.Consumer;
 import java.util.function.Function;

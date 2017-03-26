@@ -10,7 +10,7 @@ import java.util.function.Predicate;
  * so any thrown exceptions are converted to RuntimeExceptions so they can be used where
  * non-throwing functional interfaces are required
  */
-public class ThrowingLambdas {
+public interface ThrowingLambdas {
 
     /**
      * A Function which may throw a checked exception
