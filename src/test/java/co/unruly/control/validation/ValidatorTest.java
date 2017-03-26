@@ -4,7 +4,6 @@ import co.unruly.control.Pair;
 import co.unruly.control.ThrowingLambdas;
 import co.unruly.control.matchers.ResultMatchers;
 import co.unruly.control.result.Result;
-import co.unruly.control.result.Results;
 import org.hamcrest.Matcher;
 import org.junit.Test;
 
@@ -17,7 +16,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static co.unruly.control.matchers.ResultMatchers.isSuccessOf;
-import static co.unruly.control.result.Results.*;
+import static co.unruly.control.result.Resolvers.*;
+import static co.unruly.control.result.Transformers.onFailureDo;
+import static co.unruly.control.result.Transformers.onSuccessDo;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.hasItems;
@@ -119,7 +120,7 @@ public class ValidatorTest {
 
         List<Integer> evens = Stream.of(1,2,3,4,5,6,7,8,9)
                 .map((item) -> isEven.apply(item))
-                .flatMap(Results.successes())
+                .flatMap(successes())
                 .collect(toList());
 
         assertThat(evens, hasItems(2,4,6,8));
@@ -131,7 +132,7 @@ public class ValidatorTest {
 
         List<FailedValidation<Integer, String>> odds = Stream.of(1, 2, 3, 4, 5, 6, 7, 8, 9)
                 .map((item) -> isEven.apply(item))
-                .flatMap(Results.failures())
+                .flatMap(failures())
                 .collect(toList());
 
         assertThat(odds, hasItems(
@@ -153,7 +154,7 @@ public class ValidatorTest {
                 Validators.rejectIf(multipleOf(7), x -> x + " divides by 7")
         );
 
-        Stream.of(1,2,3,4,5,6,7,8,9).map((item) -> isPrime.apply(item)).forEach(onSuccess(log));
+        Stream.of(1,2,3,4,5,6,7,8,9).map((item) -> isPrime.apply(item)).forEach(onSuccessDo(log));
 
         verify(log).accept(1);
         verify(log).accept(2);
@@ -174,7 +175,7 @@ public class ValidatorTest {
                 Validators.rejectIf(multipleOf(7), x -> x + " divides by 7")
         );
 
-        Stream.of(1,2,3,4,5,6,7,8,9).map((item) -> isPrime.apply(item)).forEach(onFailure(log));
+        Stream.of(1,2,3,4,5,6,7,8,9).map((item) -> isPrime.apply(item)).forEach(onFailureDo(log));
 
         verify(log).accept(validationFailure(4, "4 divides by 2"));
         verify(log).accept(validationFailure(6, "6 divides by 2", "6 divides by 3"));
@@ -194,7 +195,7 @@ public class ValidatorTest {
                 Validators.rejectIf(multipleOf(7), x -> x + " divides by 7")
         ));
 
-        Stream.of(1,2,3,4,5,6,7,8,9).map((item) -> isPrime.apply(item)).forEach(onFailure(log));
+        Stream.of(1,2,3,4,5,6,7,8,9).map((item) -> isPrime.apply(item)).forEach(onFailureDo(log));
 
         verify(log).accept(validationFailure(4, "4 divides by 2"));
         verify(log).accept(validationFailure(6, "6 divides by 2"));
@@ -232,7 +233,7 @@ public class ValidatorTest {
                 Validators.rejectIf(multipleOf(7), x -> x + " divides by 7")
         );
 
-        Stream.of(1,2,3,4,5,6,7,8,9).map((item) -> isPrime.apply(item)).forEach(onFailure(v -> v.errors.forEach(e -> log.accept(v.value, e))));
+        Stream.of(1,2,3,4,5,6,7,8,9).map((item) -> isPrime.apply(item)).forEach(onFailureDo(v -> v.errors.forEach(e -> log.accept(v.value, e))));
 
         verify(log).accept(4, "4 divides by 2");
         verify(log).accept(6, "6 divides by 2");
@@ -253,7 +254,7 @@ public class ValidatorTest {
                 Validators.rejectIf(multipleOf(7), x -> x + " divides by 7")
         ), (num, msg) -> msg + ", oh boy");
 
-        Stream.of(1,2,3,4,5,6,7,8,9).map((item) -> isPrime.apply(item)).forEach(onFailure(v -> v.errors.forEach(e -> log.accept(v.value, e))));
+        Stream.of(1,2,3,4,5,6,7,8,9).map((item) -> isPrime.apply(item)).forEach(onFailureDo(v -> v.errors.forEach(e -> log.accept(v.value, e))));
 
         verify(log).accept(4, "4 divides by 2, oh boy");
         verify(log).accept(6, "6 divides by 2, oh boy");

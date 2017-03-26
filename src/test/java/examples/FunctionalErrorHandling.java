@@ -3,9 +3,12 @@ package examples;
 import co.unruly.control.result.Result;
 import org.junit.Test;
 
+import static co.unruly.control.result.Combiners.combineWith;
+import static co.unruly.control.result.Resolvers.ifFailed;
 import static co.unruly.control.result.Result.failure;
 import static co.unruly.control.result.Result.success;
-import static co.unruly.control.result.Results.*;
+import static co.unruly.control.result.Transformers.attempt;
+import static co.unruly.control.result.Transformers.onSuccess;
 
 public class FunctionalErrorHandling {
 
@@ -23,13 +26,13 @@ public class FunctionalErrorHandling {
         // I'm also terrible at cooking, and can ruin eggs by burning
         // or undercooking them, but salting them isn't a problem
         Result<ScrambledEggs, Garbage> scrambledEggs
-            = eggs.then(flatMap(Eggs::scramble))
-            .then(map(Condiments::salt));
+            = eggs.then(attempt(Eggs::scramble))
+            .then(onSuccess(Condiments::salt));
 
 
         // I can reliably turn bread into toast, too
         Result<Toast, Garbage> toast
-            = success(bread, Garbage.class).then(map(Bread::toast));
+            = success(bread, Garbage.class).then(onSuccess(Bread::toast));
 
         // I am however good enough to put the eggs on toast
         Result<ScrambledEggsOnToast, Garbage> eggsOnToast = scrambledEggs.then(combineWith(toast)).using(ScrambledEggsOnToast::new);

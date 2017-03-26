@@ -7,6 +7,7 @@ import co.unruly.control.Unit;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import static co.unruly.control.HigherOrderFunctions.peek;
 import static co.unruly.control.result.Introducers.tryTo;
 
 /**
@@ -25,8 +26,8 @@ public interface Transformers {
     /**
      * Returns a Consumer which takes a Result and, if it's a Success, passes it to the provided consumer.
      */
-    static <S, F> Consumer<Result<S, F>> onSuccessDo(Consumer<S> consumer) {
-        return r -> r.either(Unit.functify(consumer), Unit::noOp);
+    static <S, F> ConsumableFunction<Result<S, F>> onSuccessDo(Consumer<S> consumer) {
+        return r -> r.either(peek(consumer).andThen(Result::success), Result::failure);
     }
 
     /**
@@ -74,8 +75,8 @@ public interface Transformers {
     /**
      * Returns a consumer which takes a Result and, if it's a failure, passes it to the provided consumer
      */
-    static <S, F> Consumer<Result<S, F>> onFailureDo(Consumer<F> consumer) {
-        return r -> r.either(Unit::noOp, Unit.functify(consumer));
+    static <S, F> ConsumableFunction<Result<S, F>> onFailureDo(Consumer<F> consumer) {
+        return r -> r.either(Result::success, peek(consumer).andThen(Result::failure));
     }
 
     /**

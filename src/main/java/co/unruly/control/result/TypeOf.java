@@ -4,8 +4,7 @@ import co.unruly.control.HigherOrderFunctions;
 
 import java.util.function.Function;
 
-import static co.unruly.control.result.Results.map;
-import static co.unruly.control.result.Results.mapFailure;
+import static co.unruly.control.result.Transformers.onSuccess;
 
 /**
  * Some syntax-fu in order to get nice, readable up-casting operations on Results.
@@ -25,14 +24,14 @@ public interface TypeOf<T> {
      * Generalises the success type for a Result to an appropriate superclass.
      */
     static <T, F, S extends T> Function<Result<S, F>, Result<T, F>> using(ForSuccesses<T> dummy) {
-        return result -> result.then(map(HigherOrderFunctions::upcast));
+        return result -> result.then(onSuccess(HigherOrderFunctions::upcast));
     }
 
     /**
      * Generalises the failure type for a Result to an appropriate superclass.
      */
     static <S, T, F extends T> Function<Result<S, F>, Result<S, T>> using(ForFailures<T> dummy) {
-        return result -> result.then(mapFailure(HigherOrderFunctions::upcast));
+        return result -> result.then(Transformers.onFailure(HigherOrderFunctions::upcast));
     }
 
     // we don't use the return value - all this does is provide type context

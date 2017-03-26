@@ -1,10 +1,13 @@
 package co.unruly.control.result;
 
 import co.unruly.control.Optionals;
+import co.unruly.control.Pair;
 import co.unruly.control.ThrowingLambdas;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collector;
 import java.util.stream.Stream;
 
 import static java.util.function.Function.identity;
@@ -29,7 +32,7 @@ public interface Resolvers {
      * a failure, returns the result of applying the recovery function to the
      * failure value.
      */
-    static <S, F> Function<Result<S, F>, S> ifFailed(Function<F, S> recoveryFunction) {
+    static <OS, IS extends OS, FS extends OS, F> Function<Result<IS, F>, OS> ifFailed(Function<F, FS> recoveryFunction) {
         return r -> r.either(identity(), recoveryFunction);
     }
 
@@ -83,5 +86,13 @@ public interface Resolvers {
      */
     static <S, F> Function<Result<S, F>, Optional<F>> toOptionalFailure() {
         return r -> r.either(__ -> Optional.empty(), Optional::of);
+    }
+
+    /**
+     * Collects a Stream of Results into a Pair of Lists, the left containing the unwrapped
+     * success values, the right containing the unwrapped failures.
+     */
+    public static <S, F> Collector<Result<S, F>, Pair<List<S>, List<F>>, Pair<List<S>, List<F>>> split() {
+        return new ResultCollector<>();
     }
 }

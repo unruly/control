@@ -5,8 +5,10 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static co.unruly.control.HigherOrderFunctions.compose;
+import static co.unruly.control.result.Resolvers.ifFailed;
 import static co.unruly.control.result.Result.failure;
-import static co.unruly.control.result.Results.*;
+import static co.unruly.control.result.Transformers.attempt;
+import static co.unruly.control.result.Transformers.attemptRecovery;
 
 /**
  * A small DSL for building compact dispatch tables: better than if-expressions, worse than
@@ -48,7 +50,7 @@ public class Match {
      * not the general type of objects being matched.
      */
     public static <S, F, F1 extends F> Function<Result<S, F>, Result<S, F>> ifType(Class<F1> type, Function<F1, S> function) {
-        return x -> x.then(flatMapFailure(Introducers.<F, F1>castTo(type).andThen(flatMap(m -> Result.success(function.apply(m))))));
+        return x -> x.then(attemptRecovery(Introducers.<F, F1>castTo(type).andThen(attempt(m -> Result.success(function.apply(m))))));
     }
 
     /**
@@ -56,7 +58,7 @@ public class Match {
      * provided to it.
      */
     public static <S, F> Function<Result<S, F>, Result<S, F>> ifIs(Predicate<F> predicate, Function<F, S> function) {
-        return x -> x.then(flatMapFailure(
+        return x -> x.then(attemptRecovery(
                 failure -> predicate.test(failure)
                     ? Result.success(function.apply(failure))
                     : failure(failure)
@@ -76,7 +78,7 @@ public class Match {
      * present, returning the value in that Optional.
      */
     public static <S, F> Function<Result<S, F>, Result<S, F>> ifPresent(Function<F, Optional<S>> successProvider) {
-        return r -> r.then(flatMapFailure(
+        return r -> r.then(attemptRecovery(
             failure -> successProvider
                 .apply(failure)
                 .map(Result::<S, F>success)
@@ -87,7 +89,7 @@ public class Match {
 
     @SafeVarargs
     private static <S, F> Function<Result<S, F>, Result<F, S>> attemptMatch(Function<Result<F, S>, Result<F, S>>... potentialMatches) {
-        return Results.<S, F>invert().andThen(compose(potentialMatches));
+        return Transformers.<S, F>invert().andThen(compose(potentialMatches));
     }
 
     @FunctionalInterface

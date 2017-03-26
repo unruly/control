@@ -10,7 +10,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static co.unruly.control.HigherOrderFunctions.with;
-import static co.unruly.control.result.Results.*;
+import static co.unruly.control.result.Resolvers.collapse;
+import static co.unruly.control.result.Transformers.*;
 import static co.unruly.control.result.TypeOf.using;
 import static co.unruly.control.validation.Validators.rejectIf;
 
@@ -26,7 +27,7 @@ public class FlatMapVariance {
 
     public void canFlatmapErrorTypeOfStringIntoErrorTypeOfString() {
         divideExactlyByTwo(3)
-            .then(flatMap(this::isPrime));
+            .then(attempt(this::isPrime));
     }
 
 //    // this should not compile
@@ -43,23 +44,23 @@ public class FlatMapVariance {
         Validator<String, String> under100 = rejectIf(s -> s.length() > 2, s -> s + " is too damn high");
 
         return with(m, fizzbuzz
-                .andThen(map(x -> Integer.toString(x)))
+                .andThen(onSuccess(x -> Integer.toString(x)))
                 .andThen(using(TypeOf.<List<String>>forFailures()))
-                .andThen(flatMap(under100))
-                .andThen(map(s -> "Great success! " + s))
-                .andThen(mapFailure(f -> "Big fails :( " + String.join(", ", f)))
+                .andThen(attempt(under100))
+                .andThen(onSuccess(s -> "Great success! " + s))
+                .andThen(onFailure(f -> "Big fails :( " + String.join(", ", f)))
                 .andThen(collapse()));
     }
 
     public void canFlatmapErrorTypeOfFailedValidationIntoErrorTypeOfListOfString() {
         Result<Integer, List<String>> foo = with(4, fizzbuzz)
             .then(using(TypeOf.<List<String>>forFailures()))
-            .then(flatMap(this::listFactors));
+            .then(attempt(this::listFactors));
     }
 
     public void canFlatmapErrorTypeOfListOfStringIntoErrorTypeOfFailedValidation() {
         Result<Integer, List<String>> foo = listFactors(5)
-            .then(flatMap((item) -> fizzbuzz.apply(item)));
+            .then(attempt((item) -> fizzbuzz.apply(item)));
     }
 
     private Result<Integer, String> divideExactlyByTwo(int number) {
