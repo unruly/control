@@ -1,17 +1,14 @@
 package co.unruly.control.validation;
 
-import co.unruly.control.linklist.LinkLists;
-import co.unruly.control.linklist.NonEmptyList;
-
 import java.util.List;
 import java.util.Objects;
 
 public final class FailedValidation<T, E> implements ForwardingList<E> {
 
     public final T value;
-    public final NonEmptyList<E> errors;
+    public final List<E> errors;
 
-    public FailedValidation(T value, NonEmptyList<E> errors) {
+    public FailedValidation(T value, List<E> errors) {
         this.value = value;
         this.errors = errors;
     }
@@ -30,7 +27,7 @@ public final class FailedValidation<T, E> implements ForwardingList<E> {
         if (o == null || getClass() != o.getClass()) return false;
         FailedValidation<?, ?> that = (FailedValidation<?, ?>) o;
         return Objects.equals(value, that.value) &&
-               LinkLists.listsEqual(errors, that.errors);
+               Objects.equals(errors, that.errors);
     }
 
     @Override
@@ -40,6 +37,6 @@ public final class FailedValidation<T, E> implements ForwardingList<E> {
 
     @Override
     public List<E> delegate() {
-        return LinkLists.toList(errors);
+        return errors;
     }
 }

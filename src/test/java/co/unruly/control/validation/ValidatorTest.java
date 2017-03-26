@@ -1,12 +1,11 @@
 package co.unruly.control.validation;
 
-import co.unruly.control.linklist.LinkList;
-import co.unruly.control.linklist.LinkLists;
-import co.unruly.control.linklist.NonEmptyList;
 import co.unruly.control.Pair;
+import co.unruly.control.ThrowingLambdas;
+import co.unruly.control.matchers.ResultMatchers;
 import co.unruly.control.result.Result;
 import co.unruly.control.result.Results;
-import co.unruly.control.ThrowingLambdas;
+import org.hamcrest.Matcher;
 import org.junit.Test;
 
 import java.util.List;
@@ -17,14 +16,11 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static co.unruly.control.linklist.LinkLists.lazyMap;
-import static co.unruly.control.linklist.LinkLists.nonEmptyList;
-import static co.unruly.control.linklist.NonEmptyList.cons;
+import static co.unruly.control.matchers.ResultMatchers.isSuccessOf;
 import static co.unruly.control.result.Results.*;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.hasItems;
-import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
 
@@ -37,9 +33,9 @@ public class ValidatorTest {
         Result<Integer, FailedValidation<Integer, String>> validate4 = isEven.apply(4);
         Result<Integer, FailedValidation<Integer, String>> validate5 = isEven.apply(5);
 
-        assertThat(validate4, is(success(4)));
+        assertThat(validate4, isSuccessOf(4));
 
-        assertThat(validate5, is(failure(5, "odd")));
+        assertThat(validate5, isFailedValidationOf(5, "odd"));
     }
 
 
@@ -50,9 +46,9 @@ public class ValidatorTest {
         Result<Integer, FailedValidation<Integer, String>> validate4 = isEven.apply(4);
         Result<Integer, FailedValidation<Integer, String>> validate5 = isEven.apply(5);
 
-        assertThat(validate4, is(success(4)));
+        assertThat(validate4, isSuccessOf(4));
 
-        assertThat(validate5, is(failure(5, "5 is odd")));
+        assertThat(validate5, isFailedValidationOf(5, "5 is odd"));
     }
 
     @Test
@@ -64,10 +60,11 @@ public class ValidatorTest {
         Result<Integer, FailedValidation<Integer, String>> validate4 = fizzbuzz.apply(4);
         Result<Integer, FailedValidation<Integer, String>> validate5 = fizzbuzz.apply(15);
 
-        assertThat(validate4, is(success(4)));
+        assertThat(validate4, isSuccessOf(4));
 
-        assertThat(validate5, is(failure(15, "fizz", "15 is a buzz")));
+        assertThat(validate5, isFailedValidationOf(15, "fizz", "15 is a buzz"));
     }
+
 
     @Test
     public void canComposeValidatorsForFirstError() {
@@ -78,8 +75,8 @@ public class ValidatorTest {
         Result<Integer, FailedValidation<Integer, String>> validate5 = fizzbuzz.apply(5);
         Result<Integer, FailedValidation<Integer, String>> validate15 = fizzbuzz.apply(15);
 
-        assertThat(validate5, is(failure(5, "5 is a buzz")));
-        assertThat(validate15, is(failure(15, "fizz")));
+        assertThat(validate5, isFailedValidationOf(5, "5 is a buzz"));
+        assertThat(validate15, isFailedValidationOf(15, "fizz"));
     }
 
     @Test
@@ -96,7 +93,7 @@ public class ValidatorTest {
 
         Result<Integer, FailedValidation<Integer, String>> validate15 = combined.apply(15);
 
-        assertThat(validate15, is(failure(15, "fizz", "big")));
+        assertThat(validate15, isFailedValidationOf(15, "fizz", "big"));
     }
 
     @Test
@@ -111,24 +108,9 @@ public class ValidatorTest {
         Result<List<Integer>, FailedValidation<List<Integer>, String>> someOdds = containsEvens.apply(asList(1, 3, 7));
         Result<List<Integer>, FailedValidation<List<Integer>, String>> mixedNums = containsEvens.apply(asList(1, 2, 3, 42, 99));
 
-        assertThat(someOdds, is(success(asList(1, 3, 7))));
+        assertThat(someOdds, isSuccessOf(asList(1, 3, 7)));
 
-        assertThat(mixedNums, is(failure(asList(1, 2, 3, 42, 99), "Even numbers [2, 42] found")));
-    }
-
-    @Test
-    public void canCreateValidatorsFromFunctionsThatReturnOptionalsWithAFormatter() {
-        Validator<List<Integer>, String> containsEvens = Validators.validate(
-                xs -> nonEmptyList(xs.stream().filter(x -> x % 2 == 0).collect(toList())),
-                evens -> String.format("Even numbers [%s] found", String.join(", ", lazyMap(evens, Object::toString)))
-        );
-
-        Result<List<Integer>, FailedValidation<List<Integer>, String>> someOdds = containsEvens.apply(asList(1, 3, 7));
-        Result<List<Integer>, FailedValidation<List<Integer>, String>> mixedNums = containsEvens.apply(asList(1, 2, 3, 42, 99));
-
-        assertThat(someOdds, is(success(asList(1, 3, 7))));
-
-        assertThat(mixedNums, is(failure(asList(1, 2, 3, 42, 99), "Even numbers [2, 42] found")));
+        assertThat(mixedNums, isFailedValidationOf(asList(1, 2, 3, 42, 99), "Even numbers [2, 42] found"));
     }
 
     @Test
@@ -235,8 +217,8 @@ public class ValidatorTest {
         Result<List<Integer>, FailedValidation<List<Integer>, String>> ofFiveNumbers = onlyChecksEvenLengthLists.apply(asList(1, 2, 3, 4, 5));
         Result<List<Integer>, FailedValidation<List<Integer>, String>> ofSixNumbers = onlyChecksEvenLengthLists.apply(asList(1, 2, 3, 4, 5, 6));
 
-        assertThat(ofFiveNumbers, is(success(asList(1,2,3,4,5))));
-        assertThat(ofSixNumbers, is(failure(asList(1,2,3,4,5,6), "List contains even numbers")));
+        assertThat(ofFiveNumbers, isSuccessOf(asList(1,2,3,4,5)));
+        assertThat(ofSixNumbers, isFailedValidationOf(asList(1,2,3,4,5,6), "List contains even numbers"));
     }
 
     @Test
@@ -329,19 +311,13 @@ public class ValidatorTest {
         return x -> x != factor && x % factor == 0;
     }
 
-    private <T, E> Result<T, FailedValidation<T, E>> success(T i) {
-        return Result.success(i);
+    @SafeVarargs
+    private final <T, E> FailedValidation<T, E> validationFailure(T value, E... errors) {
+        return new FailedValidation<T, E>(value, asList(errors));
     }
 
-    @SafeVarargs
-    private final <T, E> Result<T, FailedValidation<T, E>> failure(T value, E firstError, E... laterErrors) {
-        return Result.failure(validationFailure(value, firstError, laterErrors));
-    }
-
-    @SafeVarargs
-    private final <T, E> FailedValidation<T, E> validationFailure(T value, E firstError, E... laterErrors) {
-        LinkList<E> restOfTheErrors = LinkLists.of(laterErrors);
-        NonEmptyList<E> atLeastOneError = cons(firstError, restOfTheErrors);
-        return new FailedValidation<>(value, atLeastOneError);
+    private <T, E> Matcher<Result<T, FailedValidation<T, E>>> isFailedValidationOf(T value, E... errors) {
+        FailedValidation<T, E> failedValidation = validationFailure(value, errors);
+        return ResultMatchers.isFailureOf(failedValidation);
     }
 }
