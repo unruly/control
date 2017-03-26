@@ -5,7 +5,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static co.unruly.control.HigherOrderFunctions.compose;
-import static co.unruly.control.result.Casts.cast;
 import static co.unruly.control.result.Result.failure;
 import static co.unruly.control.result.Results.*;
 
@@ -49,10 +48,7 @@ public class Match {
      * not the general type of objects being matched.
      */
     public static <S, F, F1 extends F> Function<Result<S, F>, Result<S, F>> ifType(Class<F1> type, Function<F1, S> function) {
-        return x -> x.then(flatMapFailure(
-                failure -> cast(failure, type)
-                    .then(flatMap(matchedType -> Result.success(function.apply(matchedType))))
-        ));
+        return x -> x.then(flatMapFailure(Introducers.<F, F1>castTo(type).andThen(flatMap(m -> Result.success(function.apply(m))))));
     }
 
     /**

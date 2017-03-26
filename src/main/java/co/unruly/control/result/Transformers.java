@@ -1,12 +1,12 @@
 package co.unruly.control.result;
 
+import co.unruly.control.HigherOrderFunctions;
 import co.unruly.control.ThrowingLambdas;
 import co.unruly.control.Unit;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static co.unruly.control.HigherOrderFunctions.peek;
 import static co.unruly.control.result.Introducers.tryTo;
 
 /**
@@ -60,7 +60,7 @@ public interface Transformers {
      * original failure.
      */
     static <IS, OS, F, OF extends F> Function<Result<IS, F>, Result<OS, F>> attempt(Function<IS, Result<OS, OF>> mappingFunction) {
-        return r -> r.either(mappingFunction.andThen(onFailure(Casts::upcast)), Result::failure);
+        return r -> r.either(mappingFunction.andThen(onFailure((Function<OF, F>) (fv) -> HigherOrderFunctions.upcast(fv))), Result::failure);
     }
 
     /**
@@ -84,7 +84,7 @@ public interface Transformers {
      * success.
      */
     static <S, IF, OF, OS extends S> Function<Result<S, IF>, Result<S, OF>> attemptRecovery(Function<IF, Result<OS, OF>> recoveryFunction) {
-        return r -> r.either(Result::success, recoveryFunction.andThen(onSuccess(Casts::upcast)));
+        return r -> r.either(Result::success, recoveryFunction.andThen(onSuccess((Function<OS, S>) (fv) -> HigherOrderFunctions.upcast(fv))));
     }
 
     /**
