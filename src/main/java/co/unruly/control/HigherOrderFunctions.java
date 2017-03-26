@@ -41,6 +41,9 @@ public interface HigherOrderFunctions {
         };
     }
 
+    /**
+     * Takes a value, and returns that same value, upcast to a suitable type. Inference is our friend here.
+     */
     static <R, T extends R> R upcast(T fv) {
         return fv;
     }

@@ -1,5 +1,7 @@
 package co.unruly.control.result;
 
+import co.unruly.control.HigherOrderFunctions;
+
 import java.util.function.Function;
 
 import static co.unruly.control.result.Results.map;
@@ -19,17 +21,18 @@ import static co.unruly.control.result.Results.mapFailure;
  */
 public interface TypeOf<T> {
 
-    static <S, T, F extends T> Function<Result<S, F>, Result<S, T>> using(ForFailures<T> dummy) {
-        return result -> result.then(mapFailure(TypeOf::upcast));
-    }
-
+    /**
+     * Generalises the success type for a Result to an appropriate superclass.
+     */
     static <T, F, S extends T> Function<Result<S, F>, Result<T, F>> using(ForSuccesses<T> dummy) {
-        return result -> result.then(map(TypeOf::upcast));
+        return result -> result.then(map(HigherOrderFunctions::upcast));
     }
 
-    // we don't use the return value - all this does is provide type context
-    static <T> ForFailures<T> forFailures() {
-        return null;
+    /**
+     * Generalises the failure type for a Result to an appropriate superclass.
+     */
+    static <S, T, F extends T> Function<Result<S, F>, Result<S, T>> using(ForFailures<T> dummy) {
+        return result -> result.then(mapFailure(HigherOrderFunctions::upcast));
     }
 
     // we don't use the return value - all this does is provide type context
@@ -37,18 +40,16 @@ public interface TypeOf<T> {
         return null;
     }
 
-    // this just does some magic to ensure our upcast is safe, and convert generics
-    static <R, T extends R> R upcast(T item) {
-        return item;
+    // we don't use the return value - all this does is provide type context
+    static <T> ForFailures<T> forFailures() {
+        return null;
     }
 
     // this class only exists so we can differentiate the overloads of using()
-    class ForFailures<T> {
-
-    }
+    // we don't even instantiate it
+    class ForSuccesses<T> { }
 
     // this class only exists so we can differentiate the overloads of using()
-    class ForSuccesses<T> {
-
-    }
+    // we don't even instantiate it
+    class ForFailures<T> { }
 }
