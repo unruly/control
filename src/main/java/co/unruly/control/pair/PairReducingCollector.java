@@ -1,4 +1,4 @@
-package co.unruly.control;
+package co.unruly.control.pair;
 
 import java.util.EnumSet;
 import java.util.Set;

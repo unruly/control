@@ -1,6 +1,6 @@
 package co.unruly.control.validation;
 
-import co.unruly.control.Pair;
+import co.unruly.control.pair.Pair;
 import co.unruly.control.ThrowingLambdas;
 import co.unruly.control.matchers.ResultMatchers;
 import co.unruly.control.result.Result;

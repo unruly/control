@@ -1,6 +1,6 @@
 package co.unruly.control.result;
 
-import co.unruly.control.Pair;
+import co.unruly.control.pair.Pair;
 
 import java.util.ArrayList;
 import java.util.Collections;

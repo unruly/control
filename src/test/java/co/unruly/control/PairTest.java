@@ -1,12 +1,13 @@
 package co.unruly.control;
 
+import co.unruly.control.pair.Pair;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 import java.util.List;
 import java.util.stream.Stream;
 
-import static co.unruly.control.Pairs.*;
+import static co.unruly.control.pair.Pairs.*;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.is;

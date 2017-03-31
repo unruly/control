@@ -1,8 +1,6 @@
 package co.unruly.control.result;
 
-import co.unruly.control.Optionals;
-import co.unruly.control.Pair;
-import co.unruly.control.ThrowingLambdas;
+import co.unruly.control.pair.Pair;
 
 import java.util.List;
 import java.util.Optional;
