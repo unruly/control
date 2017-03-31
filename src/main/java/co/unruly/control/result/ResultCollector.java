@@ -38,15 +38,15 @@ class ResultCollector<L, R>
 
     @Override
     public BinaryOperator<Pair<List<L>, List<R>>> combiner() {
-        return (x, y) -> new Pair<>(
+        return (x, y) -> Pair.of(
                 Stream.of(x, y).flatMap(l -> l.left.stream()).collect(toList()),
-                Stream.of(x, y).flatMap(l -> l.right.stream()).collect(toList())
+                Stream.of(x, y).flatMap(r -> r.right.stream()).collect(toList())
         );
     }
 
     @Override
     public Function<Pair<List<L>, List<R>>, Pair<List<L>, List<R>>> finisher() {
-        return pair -> new Pair<>(unmodifiableList(pair.left), unmodifiableList(pair.right));
+        return pair -> Pair.of(unmodifiableList(pair.left), unmodifiableList(pair.right));
     }
 
 
