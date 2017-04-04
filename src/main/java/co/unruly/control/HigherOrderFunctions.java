@@ -3,6 +3,7 @@ package co.unruly.control;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import static java.util.function.Function.identity;
@@ -22,6 +23,14 @@ public interface HigherOrderFunctions {
      */
     static <T> Function<T, T> compose(Function<T, T>... functions) {
         return Stream.of(functions).reduce(identity(), Function::andThen);
+    }
+
+    /**
+     * Takes a list of functions (which take and return the same type) and composes
+     * them into a single function, applying the provided functions in order
+     */
+    static <T> Predicate<T> compose(Predicate<T>... functions) {
+        return Stream.of(functions).reduce(__ -> true, Predicate::and);
     }
 
     /**
