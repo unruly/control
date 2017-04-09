@@ -11,7 +11,12 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-public class Validators {
+public interface Validators {
+
+    @SafeVarargs
+    public static <T, E> Validator<T, E> compose(Validator<T, E>... validators) {
+        return t -> Arrays.stream(validators).flatMap(v -> v.validate(t));
+    }
 
     public static <T, E> Validator<T, E> rejectIf(Predicate<T> test, E error) {
         return acceptIf(test.negate(), error);
@@ -27,19 +32,6 @@ public class Validators {
 
     public static <T, E> Validator<T, E> acceptIf(Predicate<T> test, Function<T, E> errorGenerator) {
         return t -> test.test(t) ? Stream.empty() : Stream.of(errorGenerator.apply(t));
-    }
-
-    public static <T, E> Validator<T, E> validate(Function<T, Optional<E>> errorGenerator) {
-        return t -> Optionals.stream(errorGenerator.apply(t));
-    }
-
-    public static <T, I, E> Validator<T, E> validate(Function<T, Optional<I>> errorGenerator, Function<I, E> errorFormatter) {
-        return t -> Optionals.stream(errorGenerator.apply(t).map(errorFormatter));
-    }
-
-    @SafeVarargs
-    public static <T, E> Validator<T, E> compose(Validator<T, E>... validators) {
-        return t -> Arrays.stream(validators).flatMap(v -> v.validate(t));
     }
 
     public static <T, E> Validator<T, E> firstOf(Validator<T, E> validator) {

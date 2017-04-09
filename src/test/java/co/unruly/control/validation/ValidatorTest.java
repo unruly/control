@@ -98,23 +98,6 @@ public class ValidatorTest {
     }
 
     @Test
-    public void canCreateValidatorsFromFunctionsThatReturnOptionals() {
-        Validator<List<Integer>, String> containsEvens = Validators.validate(xs -> {
-            final List<String> evenNumbers = xs.stream().filter(x -> x % 2 == 0).map(x -> Integer.toString(x)).collect(toList());
-            return evenNumbers.isEmpty()
-                    ? Optional.empty()
-                    : Optional.of(String.format("Even numbers [%s] found", String.join(", ", evenNumbers)));
-        });
-
-        Result<List<Integer>, FailedValidation<List<Integer>, String>> someOdds = containsEvens.apply(asList(1, 3, 7));
-        Result<List<Integer>, FailedValidation<List<Integer>, String>> mixedNums = containsEvens.apply(asList(1, 2, 3, 42, 99));
-
-        assertThat(someOdds, isSuccessOf(asList(1, 3, 7)));
-
-        assertThat(mixedNums, isFailedValidationOf(asList(1, 2, 3, 42, 99), "Even numbers [2, 42] found"));
-    }
-
-    @Test
     public void canStreamSuccesses() {
         Validator<Integer, String> isEven = Validators.acceptIf(divisibleBy(2), "odd");
 
