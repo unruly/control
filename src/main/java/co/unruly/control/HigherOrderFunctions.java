@@ -36,7 +36,7 @@ public interface HigherOrderFunctions {
     /**
      * Takes a value and applies a function to it.
      */
-    static <S, F, T> T with(final S input, final Function<S, T> resultMapper) {
+    static <S, I extends S, O> O with(final I input, final Function<S, O> resultMapper) {
         return resultMapper.apply(input);
     }
 
