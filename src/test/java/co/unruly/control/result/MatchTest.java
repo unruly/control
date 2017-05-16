@@ -5,7 +5,9 @@ import org.junit.Test;
 import java.util.Optional;
 import java.util.function.Function;
 
-import static co.unruly.control.result.Match.*;
+import static co.unruly.control.result.Introducers.*;
+import static co.unruly.control.result.Match.match;
+import static co.unruly.control.result.Match.matchValue;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 

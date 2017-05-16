@@ -4,7 +4,6 @@ package co.unruly.control.validation;
 import co.unruly.control.Optionals;
 
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;

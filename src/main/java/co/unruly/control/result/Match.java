@@ -1,14 +1,10 @@
 package co.unruly.control.result;
 
-import java.util.Optional;
 import java.util.function.Function;
-import java.util.function.Predicate;
+import java.util.stream.Stream;
 
-import static co.unruly.control.HigherOrderFunctions.compose;
 import static co.unruly.control.result.Resolvers.ifFailed;
 import static co.unruly.control.result.Result.failure;
-import static co.unruly.control.result.Transformers.attempt;
-import static co.unruly.control.result.Transformers.attemptRecovery;
 
 /**
  * A small DSL for building compact dispatch tables: better than if-expressions, worse than
@@ -26,11 +22,12 @@ public class Match {
      * required.
      */
     @SafeVarargs
-    public static <I, O> MatchAttempt<I, O> match(Function<Result<O, I>, Result<O, I>>... potentialMatchers) {
-        return f -> {
-            Function<Result<O, I>, O> after = ifFailed(f);
-            return attemptMatch(potentialMatchers).andThen(after).compose(Result::success);
-        };
+    public static <I, O> MatchAttempt<I, O> match(Function<I, Result<O, I>>... potentialMatchers) {
+        return f -> Stream.of(potentialMatchers)
+                .map(Transformers::attemptRecovery)
+                .reduce(i -> i, Function::andThen)
+                .andThen(ifFailed(f))
+                .compose(Result::failure);
     }
 
     /**
@@ -40,56 +37,12 @@ public class Match {
      * required.
      */
     @SafeVarargs
-    public static <I, O> BoundMatchAttempt<I, O> matchValue(I inputValue, Function<Result<O, I>, Result<O, I>>... potentialMatchers) {
-        return f -> attemptMatch(potentialMatchers).andThen(ifFailed(f)).apply(Result.success(inputValue));
-    }
-
-    /**
-     * Matches the value if it's of the same type (or a subtype of) the class specified.
-     * The handler function provided is flow-typed to take arguments of the specified class,
-     * not the general type of objects being matched.
-     */
-    public static <S, F, F1 extends F> Function<Result<S, F>, Result<S, F>> ifType(Class<F1> type, Function<F1, S> function) {
-        return x -> x.then(attemptRecovery(Introducers.<F, F1>castTo(type).andThen(attempt(m -> Result.success(function.apply(m))))));
-    }
-
-    /**
-     * Matches the value if it passes the provided predicate, and applies the handler function
-     * provided to it.
-     */
-    public static <S, F> Function<Result<S, F>, Result<S, F>> ifIs(Predicate<F> predicate, Function<F, S> function) {
-        return x -> x.then(attemptRecovery(
-                failure -> predicate.test(failure)
-                    ? Result.success(function.apply(failure))
-                    : failure(failure)
-        ));
-    }
-
-    /**
-     * Matches the value if it is equal to the provided value, and applies the handler
-     * function to it.
-     */
-    public static <S, F> Function<Result<S, F>, Result<S, F>> ifEquals(F value, Function<F, S> function) {
-        return ifIs(value::equals, function);
-    }
-
-    /**
-     * Matches the value if the provided function yields an Optional whose value is
-     * present, returning the value in that Optional.
-     */
-    public static <S, F> Function<Result<S, F>, Result<S, F>> ifPresent(Function<F, Optional<S>> successProvider) {
-        return r -> r.then(attemptRecovery(
-            failure -> successProvider
-                .apply(failure)
-                .map(Result::<S, F>success)
-                .orElseGet(() -> failure(failure))
-            )
-        );
-    }
-
-    @SafeVarargs
-    private static <S, F> Function<Result<S, F>, Result<F, S>> attemptMatch(Function<Result<F, S>, Result<F, S>>... potentialMatches) {
-        return Transformers.<S, F>invert().andThen(compose(potentialMatches));
+    public static <I, O> BoundMatchAttempt<I, O> matchValue(I inputValue, Function<I, Result<O, I>>... potentialMatchers) {
+        return f -> Stream.of(potentialMatchers)
+                .map(Transformers::attemptRecovery)
+                .reduce(i -> i, Function::andThen)
+                .andThen(ifFailed(f))
+                .apply(failure(inputValue));
     }
 
     @FunctionalInterface

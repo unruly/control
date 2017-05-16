@@ -1,14 +1,13 @@
 package co.unruly.control.validation;
 
-import co.unruly.control.pair.Pair;
 import co.unruly.control.ThrowingLambdas;
 import co.unruly.control.matchers.ResultMatchers;
+import co.unruly.control.pair.Pair;
 import co.unruly.control.result.Result;
 import org.hamcrest.Matcher;
 import org.junit.Test;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;

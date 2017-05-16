@@ -140,4 +140,15 @@ public interface Introducers {
             ? Result.success(mapper.apply(input))
             : Result.failure(input);
     }
+
+    /**
+     * Matches the value if the provided function yields an Optional whose value is
+     * present, returning the value in that Optional.
+     */
+    static <S, F> Function<F, Result<S, F>> ifPresent(Function<F, Optional<S>> successProvider) {
+        return value -> successProvider
+                .apply(value)
+                .map(Result::<S, F>success)
+                .orElseGet(() -> Result.failure(value));
+    }
 }
