@@ -10,7 +10,7 @@ import java.util.function.Supplier;
 import static java.util.function.Function.identity;
 
 /**
- * A collection of functions which take regular values and output a Result
+ * A collection of sample functions which take regular values and output a Result.
  */
 public interface Introducers {
 
@@ -69,8 +69,9 @@ public interface Introducers {
 
     /**
      * Returns a function which takes a value, applies the provided function to it, and returns
-     * a success of the output of that function, or a failure of the exception thrown by that function
-     * if it threw an exception.
+     * a success of the output of that function. In the case where the function throws an exception,
+     * that exception is passed to the provided exception-mapper, and the output of that call is the
+     * failure value.
      *
      * Whilst we take a ThrowingFunction which throws a specific checked exception type X, our
      * eventual Result is of the more general type Exception. That's because it's also possible for the
@@ -128,7 +129,6 @@ public interface Introducers {
             ? Result.success(mapper.apply(input))
             : Result.failure(input);
     }
-
 
     /**
      * Takes a value and a mapping function and returns a function which takes a value and, if it is equal to

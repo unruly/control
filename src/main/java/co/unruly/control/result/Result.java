@@ -1,5 +1,6 @@
 package co.unruly.control.result;
 
+import java.io.Serializable;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -8,14 +9,15 @@ import java.util.function.Function;
  * a Success (wrapping the successful output) or a Failure (wrapping a value
  * describing how it failed).
  * <p>
- * The interface for Result is minimal: many common operations are implemented
- * with static methods in Results, and these can be composed upon a Result by
- * passing them as arguments to then().
+ * The interface for Result is minimal: many common sample operations are implemented
+ * with static methods on Introducers, Transformers, and Resolvers.
+ *
+ * These can be composed upon a Result by passing them as arguments to then().
  *
  * @param <S> The type of a success
  * @param <F> The type of a failure
  */
-public abstract class Result<S, F>  {
+public abstract class Result<S, F> implements Serializable {
 
     private Result() {
     }

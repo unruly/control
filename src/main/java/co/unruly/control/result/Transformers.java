@@ -27,7 +27,7 @@ public interface Transformers {
      * Returns a Consumer which takes a Result and, if it's a Success, passes it to the provided consumer.
      */
     static <S, F> ConsumableFunction<Result<S, F>> onSuccessDo(Consumer<S> consumer) {
-        return r -> r.either(peek(consumer).andThen(Result::success), Result::failure);
+        return r -> r.then(onSuccess(peek(consumer)));
     }
 
     /**
@@ -76,7 +76,7 @@ public interface Transformers {
      * Returns a consumer which takes a Result and, if it's a failure, passes it to the provided consumer
      */
     static <S, F> ConsumableFunction<Result<S, F>> onFailureDo(Consumer<F> consumer) {
-        return r -> r.either(Result::success, peek(consumer).andThen(Result::failure));
+        return r -> r.then(onFailure(peek(consumer)));
     }
 
     /**
@@ -93,5 +93,43 @@ public interface Transformers {
      */
     static <S, F> Function<Result<S, F>, Result<F, S>> invert() {
         return r -> r.either(Result::failure, Result::success);
+    }
+
+    /**
+     * Returns a function which takes a Result whose success type is itself a Result, and merges the failure cases
+     * so we have a flat Result.
+     *
+     * Note that *most of the time* this shouldn't be required, and indicates using onSuccess() when attempt() would
+     * be more appropriate.
+     *
+     * There are some situations though where we do end up with constructs like this: one example
+     * is when a function which returns a Result can throw exceptions (eg, when a Result-returning handler is passed
+     * into a database context). Passing that call into a tryTo() will yield a success type of the inner Result, wrapped
+     * in an outer Result for the tryTo().
+     *
+     * If the failure types of the inner and outer failure types do not match, you'll need to either first convert the
+     * failures of the outer Result or use the overload which maps the failures of the inner Result.
+     */
+    static <S, F> Function<Result<Result<S, F>, F>, Result<S, F>> mergeFailures() {
+        return attempt(i -> i);
+    }
+
+    /**
+     * Returns a function which takes a Result whose success type is itself a Result, and merges the failure cases
+     * so we have a flat Result.
+     *
+     * Note that *most of the time* this shouldn't be required, and indicates using onSuccess() when attempt() would
+     * be more appropriate.
+     *
+     * There are some situations though where we do end up with constructs like this: one example
+     * is when a function which returns a Result can throw exceptions (eg, when a Result-returning handler is passed
+     * into a database context). Passing that call into a tryTo() will yield a success type of the inner Result, wrapped
+     * in an outer Result for the tryTo().
+     *
+     * In these cases, it's more likely the inner failure type is domain-specific, so the default approach is to map the
+     * outer failure to the inner failure and then merge.
+     */
+    static <S, F1, F2> Function<Result<Result<S, F1>, F2>, Result<S, F1>> mergeFailures(Function<F2, F1> failureMapper) {
+        return r -> r.then(onFailure(failureMapper)).then(mergeFailures());
     }
 }
