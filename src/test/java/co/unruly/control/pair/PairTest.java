@@ -1,12 +1,16 @@
-package co.unruly.control;
+package co.unruly.control.pair;
 
 import co.unruly.control.pair.Pair;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
+import static co.unruly.control.pair.Maps.entry;
+import static co.unruly.control.pair.Maps.mapOf;
 import static co.unruly.control.pair.Pairs.*;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
@@ -60,6 +64,21 @@ public class PairTest {
                 ));
 
         assertThat(reduced, is(Pair.of(6, "hellogoodbye")));
+    }
+
+    @Test
+    public void canCreateMaps() {
+
+        Map<String, String> expectedMap = new HashMap<>();
+        expectedMap.put("hello", "world");
+        expectedMap.put("six of one", "half a dozen of the other");
+
+        Map<String, String> actualMap = mapOf(
+            entry("hello", "world"),
+            entry("six of one", "half a dozen of the other")
+        );
+
+        assertThat(actualMap, is(expectedMap));
     }
 
 }
