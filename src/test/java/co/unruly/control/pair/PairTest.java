@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 
 import static co.unruly.control.pair.Maps.entry;
 import static co.unruly.control.pair.Maps.mapOf;
+import static co.unruly.control.pair.Maps.toMap;
 import static co.unruly.control.pair.Pairs.*;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
@@ -77,6 +78,21 @@ public class PairTest {
             entry("hello", "world"),
             entry("six of one", "half a dozen of the other")
         );
+
+        assertThat(actualMap, is(expectedMap));
+    }
+
+    @Test
+    public void canCollectPairsIntoMap() {
+
+        Map<String, String> expectedMap = new HashMap<>();
+        expectedMap.put("hello", "world");
+        expectedMap.put("six of one", "half a dozen of the other");
+
+        Map<String, String> actualMap = Stream.of(
+            entry("hello", "world"),
+            entry("six of one", "half a dozen of the other")
+        ).collect(toMap());
 
         assertThat(actualMap, is(expectedMap));
     }
