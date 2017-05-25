@@ -31,6 +31,7 @@ public interface Casts {
      * Takes a class and a list of predicates (on that class), and returns true if it is both a member
      * of that class and satisfies all the predicates. Otherwise, returns false.
      */
+    @SafeVarargs
     static <S, T extends S> Predicate<S> instanceOf(Class<T> clazz, Predicate<T> ...additionalTests) {
         final Predicate<T> reduced = compose(additionalTests);
         return t -> Casts.cast(t, clazz).then(r -> r.either(reduced::test, __ -> false));
