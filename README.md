@@ -39,6 +39,50 @@ public Result<Integer, String> asResult(Optional<Integer> maybeNumber) {
 }
 ```
 
+#### Composing operations on a Result: Transformers
+
+`Result` is most useful when modelling an operation as a sequence of smaller operations, each using
+the output of the last step, and some of which can fail. The most common operations here are `onSuccess()` 
+and `attempt()`.
+
+Invoking `onSuccess(f)` on a `Result` will apply `f` to the value in the `Result` if it's a success, yielding a 
+new success. If the original `Result` was a failure, `f` will not be invoked and the original failing `Result` will
+be returned.
+
+If you have a function `f` which can fail - i.e. a function which returns a `Result` - then invoking `attempt(f)` will
+apply `f` to the value in the `Result` if it's a success, yielding a new `Result` which may be either a success or 
+failure. If the original `Result` was a failure, `f` will not be invoked and the original failing `Result` will
+be returned.
+
+This allows us to chain together a sequence of calls to `onSuccess` and `attempt` to specify what to do on the
+happy path, and cascade any failure cases together to be handled once.
+
+For example, if we want to write a bestselling novel, then there are various steps towards getting it published. 
+We need to have an idea, secure an advance, write the manuscript, get it edited, get it published, and rocket up the bestseller charts.
+
+Getting the idea, securing an advance and finishing the manuscript are definitely steps which can fail.
+However, given success in the other steps, editing and publishing are mechanical steps we can have confidence will succeed, 
+and once those are complete we can then release the novel and (eventually) count the total sales.
+
+If any of the steps fail, no novel is published and therefore the sales are 0.
+
+We could therefore model the process as follows:
+
+```java
+public int bookSales(Author author) {
+    return author.getIdea()
+            .then(attempt(idea -> publisher.getAdvance(idea)))
+            .then(attempt(project -> author.complete(project)))
+            .then(onSuccess(manuscript -> editor.edit(manuscript)))
+            .then(onSuccess(manuscript -> publisher.print(manuscript)))
+            .then(onSuccess(novel -> retailer.salesOf(novel)))
+            .then(onFailure(failure -> 0));
+}
+```
+
+Whilst `onSuccess()` and `attempt()` are the most common ways to transform a `Result` into another `Result`,
+other use cases exist. A collection of such functions exists in `co.unruly.control.result.Transformers`.
+
 #### Extracting a value from a Result: Resolvers
 
 The simplest way to extract a value from a `Result` is to simply describe what to do with a failure value.
@@ -158,9 +202,3 @@ simultaneously, and therefore it can properly derive both the success and failur
 
 Of course, `with()` is not exclusively useful with `Result`: it's a valuable tool whenever
 using higher order functions in Java.
-
-#### Chaining Results: aka Railway Oriented Programming
-
-One common pattern with `Result`s is to chain a sequence of operations, each taking
-a `Result` and outputting a new `Result`. Usually, each operation will only act on the
-result if it was a success, simply passing the existing failure through if it was a failure.
