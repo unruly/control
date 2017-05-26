@@ -64,19 +64,20 @@ Getting the idea, securing an advance and finishing the manuscript are definitel
 However, given success in the other steps, editing and publishing are mechanical steps we can have confidence will succeed, 
 and once those are complete we can then release the novel and (eventually) count the total sales.
 
-If any of the steps fail, no novel is published and therefore the sales are 0.
+If any of the steps fail, no novel is published, and we can look at the error message from whenever the process failed.
 
 We could therefore model the process as follows:
 
 ```java
-public int bookSales(Author author) {
+public static String describeNovelSales(Author author, Publisher publisher, Editor editor, Retailer retailer) {
     return author.getIdea()
-            .then(attempt(idea -> publisher.getAdvance(idea)))
-            .then(attempt(project -> author.complete(project)))
-            .then(onSuccess(manuscript -> editor.edit(manuscript)))
-            .then(onSuccess(manuscript -> publisher.print(manuscript)))
-            .then(onSuccess(novel -> retailer.salesOf(novel)))
-            .then(onFailure(failure -> 0));
+            .then(attempt(publisher::getAdvance))
+            .then(attempt(author::writeNovel))
+            .then(onSuccess(editor::editNovel))
+            .then(onSuccess(publisher::publishNovel))
+            .then(onSuccess(retailer::sellNovel))
+            .then(onSuccess(sales -> format("%s sold %d copies", sales.novel, sales.copiesSold)))
+            .then(collapse());
 }
 ```
 

@@ -12,9 +12,7 @@ import static java.lang.String.format;
 public class NovelErrorHandling {
 
     public static String novelSales(Author author, Publisher publisher, Editor editor, Retailer retailer) {
-        final Result<Idea, String> maybeIdea = success(new Idea("Harry Potter and the Sorcerer's Cheeseburger", 12));
-
-        return maybeIdea
+        return author.getIdea()
                 .then(attempt(publisher::getAdvance))
                 .then(attempt(author::writeNovel))
                 .then(onSuccess(editor::editNovel))
@@ -25,12 +23,18 @@ public class NovelErrorHandling {
     }
 
     public static class Author {
+        private Result<Idea, String> idea;
         private final int skill;
         private final int lifestyleCosts;
 
         public Author(Result<Idea, String> idea, int skill, int lifestyleCosts) {
+            this.idea = idea;
             this.skill = skill;
             this.lifestyleCosts = lifestyleCosts;
+        }
+
+        public Result<Idea, String> getIdea() {
+            return idea;
         }
 
         public Result<Manuscript, String> writeNovel(Advance advance) {
