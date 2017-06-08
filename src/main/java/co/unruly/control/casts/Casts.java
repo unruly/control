@@ -18,6 +18,12 @@ public interface Casts {
                 : Result.failure(item);
     }
 
+    static <S, T extends S> Result<T, S> exactCast(S item, Class<T> specialisedClass) {
+        return specialisedClass == item.getClass()
+                ? Result.success((T)item)
+                : Result.failure(item);
+    }
+
     /**
      * Takes a class and returns a function which takes a value, attempts to cast it to that class, and returns
      * a Success of the provided type if it's a member of it, and a Failure of the known type otherwise, in both
@@ -25,6 +31,15 @@ public interface Casts {
      */
     static <IS, OS extends IS> Function<IS, Result<OS, IS>> castTo(Class<OS> targetClass) {
         return input -> cast(input, targetClass);
+    }
+
+    /**
+     * Takes a class and returns a function which takes a value, attempts to cast it to that class, and returns
+     * a Success of the provided type if it's a member of it, and a Failure of the known type otherwise, in both
+     * cases containing the input value.
+     */
+    static <IS, OS extends IS> Function<IS, Result<OS, IS>> exactCastTo(Class<OS> targetClass) {
+        return input -> exactCast(input, targetClass);
     }
 
     /**

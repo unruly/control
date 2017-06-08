@@ -1,7 +1,5 @@
 package examples;
 
-import co.unruly.control.casts.Equality;
-
 import java.util.Objects;
 
 import static co.unruly.control.casts.Equality.areEqual;
@@ -32,7 +30,7 @@ public class ConciseEquals {
 
     @Override
     public boolean equals(Object o) {
-        return areEqual(this, o, ConciseEquals.class, (a, b) ->
+        return areEqual(this, o, (a, b) ->
             a.number == b.number &&
             Objects.equals(a.text, b.text)
         );
