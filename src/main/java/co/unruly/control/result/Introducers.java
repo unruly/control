@@ -131,6 +131,15 @@ public interface Introducers {
     }
 
     /**
+     * Takes a predicate and a mapping function and returns a function which takes a value and, if it doesn't
+     * satisfy the predicate, applies the mapping function to it and returns it as a Success, otherwise returning
+     * the input value as a Failure.
+     */
+    static <S, F> Function<F, Result<S, F>> ifNot(Predicate<F> test, Function<F, S> mapper) {
+        return ifIs(test.negate(), mapper);
+    }
+
+    /**
      * Takes a value and a mapping function and returns a function which takes a value and, if it is equal to
      * the provided value, applies the mapping function to it and returns it as a Success, otherwise returning
      * the input value as a Failure.
