@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 
 public interface Maps {
 
+    @SafeVarargs
     static <K, V> Map<K, V> mapOf(Pair<K, V> ...entries) {
         return Stream.of(entries).collect(toMap());
     }
