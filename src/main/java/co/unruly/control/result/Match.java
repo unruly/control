@@ -1,8 +1,12 @@
 package co.unruly.control.result;
 
+import co.unruly.control.HigherOrderFunctions;
+
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import static co.unruly.control.HigherOrderFunctions.compose;
+import static co.unruly.control.HigherOrderFunctions.with;
 import static co.unruly.control.result.Resolvers.ifFailed;
 import static co.unruly.control.result.Result.failure;
 
@@ -23,11 +27,16 @@ public class Match {
      */
     @SafeVarargs
     public static <I, O> MatchAttempt<I, O> match(Function<I, Result<O, I>>... potentialMatchers) {
-        return f -> Stream.of(potentialMatchers)
-                .map(Transformers::attemptRecovery)
-                .reduce(i -> i, Function::andThen)
-                .andThen(ifFailed(f))
-                .compose(Result::failure);
+        return f -> attemptMatch(potentialMatchers).andThen(ifFailed(f));
+    }
+
+    /**
+     * Builds a dispatch function from the provided matchers. Note that this returns a Result,
+     * as there's no way to determine if the dispatch table is complete: if no match is found,
+     * returns a Failure of the input value.
+     */
+    public static <I, O> Function<I, Result<O, I>> attemptMatch(Function<I, Result<O, I>>... potentialMatchers) {
+        return compose(Stream.of(potentialMatchers).map(Transformers::attemptRecovery)).compose(Result::failure);
     }
 
     /**
@@ -38,11 +47,7 @@ public class Match {
      */
     @SafeVarargs
     public static <I, O> BoundMatchAttempt<I, O> matchValue(I inputValue, Function<I, Result<O, I>>... potentialMatchers) {
-        return f -> Stream.of(potentialMatchers)
-                .map(Transformers::attemptRecovery)
-                .reduce(i -> i, Function::andThen)
-                .andThen(ifFailed(f))
-                .apply(failure(inputValue));
+        return f -> with(inputValue, attemptMatch(potentialMatchers)).then(ifFailed(f));
     }
 
     @FunctionalInterface

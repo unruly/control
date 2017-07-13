@@ -14,7 +14,7 @@ public interface Combiners {
      * If either or both arguments are Failures, then this returns the first failure
      * it encountered.
      */
-    public static <A, B, F> Function<Result<A, F>, MergeableResults<A, B, F>> combineWith(Result<B, F> secondArgument) {
+    static <A, B, F> Function<Result<A, F>, MergeableResults<A, B, F>> combineWith(Result<B, F> secondArgument) {
         // ugh ugh ugh we need an abstract class because otherwise it can't infer generics properly can i be sick now? ta
         return result -> new MergeableResults<A, B, F>() {
             @Override
@@ -31,7 +31,7 @@ public interface Combiners {
     }
 
     @FunctionalInterface
-    public interface MergeableResults<A, B, F>  {
+    interface MergeableResults<A, B, F>  {
         <C> Result<C, F> using(BiFunction<A, B, C> combiner);
     }
 }

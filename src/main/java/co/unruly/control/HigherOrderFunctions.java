@@ -22,12 +22,20 @@ public interface HigherOrderFunctions {
      * them into a single function, applying the provided functions in order
      */
     static <T> Function<T, T> compose(Function<T, T>... functions) {
-        return Stream.of(functions).reduce(identity(), Function::andThen);
+        return compose(Stream.of(functions));
     }
 
     /**
-     * Takes a list of functions (which take and return the same type) and composes
+     * Takes a Stream of functions (which take and return the same type) and composes
      * them into a single function, applying the provided functions in order
+     */
+    static <T> Function<T, T> compose(Stream<Function<T, T>> functions) {
+        return functions.reduce(identity(), Function::andThen);
+    }
+
+    /**
+     * Takes a list of predicates and composes them into a single predicate, which
+     * passes when all passed-in predicates pass
      */
     static <T> Predicate<T> compose(Predicate<T>... functions) {
         return Stream.of(functions).reduce(__ -> true, Predicate::and);
