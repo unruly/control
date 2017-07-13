@@ -17,14 +17,14 @@ public interface Introducers {
     /**
      * Returns a Function which creates a new Success wrapping the provided value
      */
-    static <S, F> Function<S, Result<S, F>> success(S value) {
+    static <S, F> Function<S, Result<S, F>> success() {
         return Result::success;
     }
 
     /**
      * Returns a Function which creates a new Failure wrapping the provided value
      */
-    static <S, F> Function<F, Result<S, F>> failure(F value) {
+    static <S, F> Function<F, Result<S, F>> failure() {
         return Result::failure;
     }
 
