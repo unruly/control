@@ -102,9 +102,26 @@ public interface Introducers {
      * Takes a class and returns a function which takes a value, attempts to cast it to that class, and returns
      * a Success of the provided type if it's a member of it, and a Failure of the known type otherwise, in both
      * cases containing the input value.
+     *
+     * This differs from exactCastTo in that exactCastTo will only return a Success if the given value is exactly
+     * the target type, whereas this will also return a Success if it is a subtype of that type.
      */
     static <IS, OS extends IS> Function<IS, Result<OS, IS>> castTo(Class<OS> targetClass) {
         return input -> targetClass.isAssignableFrom(input.getClass())
+            ? Result.success((OS)input)
+            : Result.failure(input);
+    }
+
+    /**
+     * Takes a class and returns a function which takes a value, attempts to cast it to that class, and returns
+     * a Success of the provided type if it's the same type as it, and a Failure of the known type otherwise, in both
+     * cases containing the input value.
+     *
+     * This differs from castTo in that castTo will return a Success if the given value is a subtype of the target
+     * type, whereas this will only return a Success if it is exactly that type.
+     */
+    static <IS, OS extends IS> Function<IS, Result<OS, IS>> exactCastTo(Class<OS> targetClass) {
+        return input -> targetClass.equals(input.getClass())
             ? Result.success((OS)input)
             : Result.failure(input);
     }

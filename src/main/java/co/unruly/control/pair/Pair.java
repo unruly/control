@@ -20,15 +20,26 @@ public class Pair<L, R> {
         return new Pair<>(left, right);
     }
 
+    /**
+     * Gets the left element. Note that Pair also supports direct member access, but this is useful when you need
+     * a method reference to extract one side of the pair.
+     */
     public L left() {
         return left;
     }
 
+    /**
+     * Gets the right element. Note that Pair also supports direct member access, but this is useful when you need
+     * a method reference to extract one side of the pair.
+     */
     public R right() {
         return right;
 
     }
 
+    /**
+     * Applies the given function to this pair.
+     */
     public <T> T then(Function<Pair<L, R>, T> function) {
         return function.apply(this);
     }

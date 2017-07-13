@@ -1,13 +1,9 @@
 package co.unruly.control.casts;
 
-import co.unruly.control.result.Resolvers;
-
 import java.util.function.BiPredicate;
 
 import static co.unruly.control.HigherOrderFunctions.with;
-import static co.unruly.control.casts.Casts.cast;
-import static co.unruly.control.casts.Casts.castTo;
-import static co.unruly.control.casts.Casts.exactCastTo;
+import static co.unruly.control.result.Introducers.exactCastTo;
 import static co.unruly.control.result.Resolvers.ifFailed;
 import static co.unruly.control.result.Transformers.onSuccess;
 

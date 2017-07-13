@@ -8,20 +8,28 @@ import java.util.function.IntFunction;
 import java.util.stream.Collector;
 
 /**
- * Created by tomj on 31/03/2017.
+ * Convenience functions on Pairs
  */
 public interface Pairs {
 
+    /**
+     * Applies the given function to the left element of a Pair, returning a new Pair with the result of that
+     * function as the left element and the original right element untouched
+     */
     static <OL, NL, R> Function<Pair<OL, R>, Pair<NL, R>> onLeft(Function<OL, NL> leftMapper) {
         return pair -> Pair.of(leftMapper.apply(pair.left), pair.right);
     }
 
+    /**
+     * Applies the given function to the right element of a Pair, returning a new Pair with the result of that
+     * function as the right element and the original left element untouched
+     */
     static <L, OR, NR> Function<Pair<L, OR>, Pair<L, NR>> onRight(Function<OR, NR> rightMapper) {
         return pair -> Pair.of(pair.left, rightMapper.apply(pair.right));
     }
 
     /**
-     * Collects a Stream of Pairs into a single Pair of arrays, where a given index can be used to access the left
+     * Collects a Stream of Pairs into a single Pair of lists, where a given index can be used to access the left
      * and right parts of the input pairs respectively.
      */
     static <L, R> Collector<Pair<L, R>, Pair<List<L>, List<R>>, Pair<List<L>, List<R>>> toParallelLists() {
