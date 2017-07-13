@@ -21,11 +21,11 @@ public class ExceptionsInStreamsHandling {
             .map(tryTo(this::findCustomerByName))
             .peek(onSuccessDo(this::sendEmailUpdateTo))
             .map(onSuccess(Customer::age))
-            .map(attemptRecovery(ifType(NoCustomerWithThatName.class, error -> {
+            .map(recover(ifType(NoCustomerWithThatName.class, error -> {
                 log("Customer not found :(@");
                 return -1;
             })))
-            .map(attemptRecovery(ifType(IOException.class, error -> -2)))
+            .map(recover(ifType(IOException.class, error -> -2)))
             .map(ifFailed(__ -> -127))
             .collect(toList());
     }
@@ -37,11 +37,11 @@ public class ExceptionsInStreamsHandling {
             .map(tryTo(this::findCustomerByName))
             .peek(onSuccessDo(this::sendEmailUpdateTo))
             .map(onSuccessTry(Customer::calculateValue))
-            .map(attemptRecovery(ifType(NoCustomerWithThatName.class, error -> {
+            .map(recover(ifType(NoCustomerWithThatName.class, error -> {
                 log("Customer not found :(");
                 return -1;
             })))
-            .map(attemptRecovery(ifType(IOException.class, error -> -2)))
+            .map(recover(ifType(IOException.class, error -> -2)))
             .map(ifFailed(__ -> -127))
             .collect(toList());
     }

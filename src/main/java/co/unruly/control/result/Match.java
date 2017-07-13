@@ -1,7 +1,5 @@
 package co.unruly.control.result;
 
-import co.unruly.control.HigherOrderFunctions;
-
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -36,7 +34,7 @@ public class Match {
      * returns a Failure of the input value.
      */
     public static <I, O> Function<I, Result<O, I>> attemptMatch(Function<I, Result<O, I>>... potentialMatchers) {
-        return compose(Stream.of(potentialMatchers).map(Transformers::attemptRecovery)).compose(Result::failure);
+        return compose(Stream.of(potentialMatchers).map(Transformers::recover)).compose(Result::failure);
     }
 
     /**

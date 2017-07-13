@@ -69,7 +69,7 @@ public interface Transformers {
      * to that failure. Otherwise, returns the original success.
      */
     static <S, IF, OF> Function<Result<S, IF>, Result<S, OF>> onFailure(Function<IF, OF> mappingFunction) {
-        return attemptRecovery(mappingFunction.andThen(Result::failure));
+        return recover(mappingFunction.andThen(Result::failure));
     }
 
     /**
@@ -84,7 +84,7 @@ public interface Transformers {
      * that failure - generating a new Result - and returns that Result. Otherwise, return the original
      * success.
      */
-    static <S, IF, OF, OS extends S> Function<Result<S, IF>, Result<S, OF>> attemptRecovery(Function<IF, Result<OS, OF>> recoveryFunction) {
+    static <S, IF, OF, OS extends S> Function<Result<S, IF>, Result<S, OF>> recover(Function<IF, Result<OS, OF>> recoveryFunction) {
         return r -> r.either(Result::success, recoveryFunction.andThen(onSuccess((Function<OS, S>) (fv) -> HigherOrderFunctions.upcast(fv))));
     }
 
