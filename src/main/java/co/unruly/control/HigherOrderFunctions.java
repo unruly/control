@@ -1,12 +1,21 @@
 package co.unruly.control;
 
+import co.unruly.control.pair.Pair;
+
+import java.util.Iterator;
+import java.util.Objects;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import static java.util.function.Function.identity;
+import static java.util.stream.Stream.iterate;
 
 public interface HigherOrderFunctions {
 
@@ -56,6 +65,55 @@ public interface HigherOrderFunctions {
             action.accept(t);
             return t;
         };
+    }
+
+    static <T> Stream<Pair<Integer, T>> withIndices(Stream<T> items) {
+        return zip(iterate(0, x -> x + 1), items);
+    }
+
+    static <A, B> Stream<Pair<A, B>> zip(Stream<A> a, Stream<B> b) {
+        return zip(a, b, Pair::of);
+    }
+
+    /**
+     * Zips two streams together using the zipper function, resulting in a single stream of
+     * items from each stream combined using the provided function.
+     *
+     * The resultant stream will have the length of the shorter of the two input streams.
+     *
+     * Sourced from https://stackoverflow.com/questions/17640754/zipping-streams-using-jdk8-with-lambda-java-util-stream-streams-zip
+     */
+    static <A , B, C> Stream<C> zip(Stream<A> a, Stream<B> b, BiFunction<A, B, C> zipper) {
+        Objects.requireNonNull(zipper);
+        Spliterator<? extends A> aSpliterator = Objects.requireNonNull(a).spliterator();
+        Spliterator<? extends B> bSpliterator = Objects.requireNonNull(b).spliterator();
+
+        // Zipping looses DISTINCT and SORTED characteristics
+        int characteristics = aSpliterator.characteristics() & bSpliterator.characteristics() &
+            ~(Spliterator.DISTINCT | Spliterator.SORTED);
+
+        long zipSize = ((characteristics & Spliterator.SIZED) != 0)
+            ? Math.min(aSpliterator.getExactSizeIfKnown(), bSpliterator.getExactSizeIfKnown())
+            : -1;
+
+        Iterator<A> aIterator = Spliterators.iterator(aSpliterator);
+        Iterator<B> bIterator = Spliterators.iterator(bSpliterator);
+        Iterator<C> cIterator = new Iterator<C>() {
+            @Override
+            public boolean hasNext() {
+                return aIterator.hasNext() && bIterator.hasNext();
+            }
+
+            @Override
+            public C next() {
+                return zipper.apply(aIterator.next(), bIterator.next());
+            }
+        };
+
+        Spliterator<C> split = Spliterators.spliterator(cIterator, zipSize, characteristics);
+        return (a.isParallel() || b.isParallel())
+            ? StreamSupport.stream(split, true)
+            : StreamSupport.stream(split, false);
     }
 
     /**
