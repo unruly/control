@@ -2,7 +2,7 @@ package co.unruly.control.result;
 
 import org.junit.Test;
 
-import static co.unruly.control.HigherOrderFunctions.with;
+import static co.unruly.control.ApplicableWrapper.startWith;
 import static co.unruly.control.matchers.ResultMatchers.isFailureOf;
 import static co.unruly.control.matchers.ResultMatchers.isSuccessOf;
 import static co.unruly.control.result.Introducers.castTo;
@@ -14,7 +14,8 @@ public class CastsTest {
     public void castingToCorrectTypeYieldsSuccess() {
         final Object helloWorld = "Hello World";
 
-        Result<String, Object> cast = with(helloWorld, castTo(String.class));
+        Result<String, Object> cast = startWith(helloWorld)
+                .then(castTo(String.class));
 
         assertThat(cast, isSuccessOf("Hello World"));
     }
@@ -23,7 +24,8 @@ public class CastsTest {
     public void castingToIncorrectTypeYieldsFailure() {
         final Object helloWorld = "Hello World";
 
-        Result<Integer, Object> cast = with(helloWorld, castTo(Integer.class));
+        Result<Integer, Object> cast = startWith(helloWorld)
+                .then(castTo(Integer.class));
 
         assertThat(cast, isFailureOf("Hello World"));
     }

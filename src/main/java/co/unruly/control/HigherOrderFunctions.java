@@ -51,13 +51,6 @@ public interface HigherOrderFunctions {
     }
 
     /**
-     * Takes a value and applies a function to it.
-     */
-    static <S, I extends S, O> O with(final I input, final Function<S, O> resultMapper) {
-        return resultMapper.apply(input);
-    }
-
-    /**
      * Turns a Consumer into a Function which applies the consumer and returns the input
      */
     static <T> Function<T, T> peek(Consumer<T> action) {

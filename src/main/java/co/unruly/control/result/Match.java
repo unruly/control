@@ -3,10 +3,9 @@ package co.unruly.control.result;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import static co.unruly.control.ApplicableWrapper.startWith;
 import static co.unruly.control.HigherOrderFunctions.compose;
-import static co.unruly.control.HigherOrderFunctions.with;
 import static co.unruly.control.result.Resolvers.ifFailed;
-import static co.unruly.control.result.Result.failure;
 
 /**
  * A small DSL for building compact dispatch tables: better than if-expressions, worse than
@@ -45,7 +44,9 @@ public class Match {
      */
     @SafeVarargs
     public static <I, O> BoundMatchAttempt<I, O> matchValue(I inputValue, Function<I, Result<O, I>>... potentialMatchers) {
-        return f -> with(inputValue, attemptMatch(potentialMatchers)).then(ifFailed(f));
+        return f -> startWith(inputValue)
+                .then(attemptMatch(potentialMatchers))
+                .then(ifFailed(f));
     }
 
     @FunctionalInterface
