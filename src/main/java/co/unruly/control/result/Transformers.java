@@ -6,6 +6,7 @@ import co.unruly.control.ThrowingLambdas;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import static co.unruly.control.HigherOrderFunctions.peek;
 import static co.unruly.control.result.Introducers.tryTo;
@@ -77,6 +78,20 @@ public interface Transformers {
      */
     static <S, F> ConsumableFunction<Result<S, F>> onFailureDo(Consumer<F> consumer) {
         return r -> r.then(onFailure(peek(consumer)));
+    }
+
+    /**
+     * Takes a Result of a Stream as a success or a single failure, and returns a Stream of Results
+     * containing all the successes, or the single failure.
+     *
+     * The main use-case for this is to follow mapping over tryTo() on a function which was designed to
+     * be flat-mapped over.
+     */
+    static <S, F> Function<Result<Stream<S>, F>, Stream<Result<S, F>>> unwrapSuccesses() {
+        return r -> r.either(
+            successes -> successes.map(Result::success),
+            failure -> Stream.of(Result.failure(failure))
+        );
     }
 
     /**

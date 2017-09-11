@@ -6,7 +6,9 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
+import static co.unruly.control.result.Transformers.unwrapSuccesses;
 import static java.util.function.Function.identity;
 
 /**
@@ -96,6 +98,16 @@ public interface Introducers {
                 return Result.failure(exceptionMapper.apply(ex));
             }
         };
+    }
+
+
+    /**
+     * Returns a function which takes a value, applies the provided stream-returning function to it,
+     * and return a stream which is the stream returned by the function, with each element wrapped in
+     * a success, or a single failure of the exception thrown by that function if it threw an exception.
+     */
+    static <IS, OS, X extends Exception> Function<IS, Stream<Result<OS, Exception>>> tryAndUnwrap(ThrowingLambdas.ThrowingFunction<IS, Stream<OS>, X> f) {
+        return tryTo(f).andThen(unwrapSuccesses());
     }
 
     /**

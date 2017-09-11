@@ -107,4 +107,26 @@ public interface ThrowingLambdas {
             };
         }
     }
+
+    static <T, X extends Exception> Predicate<T> throwsWhen(ThrowingConsumer<T, X> consumer) {
+        return t -> {
+            try {
+                consumer.accept(t);
+                return false;
+            } catch (Exception ex) {
+                return true;
+            }
+        };
+    }
+
+    static <T, X extends Exception> Predicate<T> doesntThrow(ThrowingConsumer<T, X> consumer) {
+        return t -> {
+            try {
+                consumer.accept(t);
+                return true;
+            } catch (Exception ex) {
+                return false;
+            }
+        };
+    }
 }
