@@ -1,11 +1,16 @@
 package co.unruly.control.pair;
 
+import co.unruly.control.result.Result;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.stream.Collector;
+
+import static co.unruly.control.result.Result.failure;
+import static co.unruly.control.result.Result.success;
 
 /**
  * Convenience functions on Pairs
@@ -61,5 +66,21 @@ public interface Pairs {
             Function<List<L>, FL> leftFinisher,
             Function<List<R>, FR> rightFinisher) {
         return new PairListCollector<>(leftFinisher, rightFinisher);
+    }
+
+    /**
+     * If there are any elements in the right side of the Pair, return a failure of
+     * the right side, otherwise return a success of the left.
+     */
+    static <L, R> Result<List<L>, List<R>> anyFailures(Pair<List<L>, List<R>> sides) {
+        return sides.right.isEmpty() ? success(sides.left) : failure(sides.right);
+    }
+
+    /**
+     * If there are any elements in the left side of the Pair, return a success of
+     * the left side, otherwise return a failure of the left.
+     */
+    static <L, R> Result<List<L>, List<R>> anySuccesses(Pair<List<L>, List<R>> sides) {
+        return sides.left.isEmpty() ? failure(sides.right) : success(sides.left);
     }
 }
