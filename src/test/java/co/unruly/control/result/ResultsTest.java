@@ -1,6 +1,9 @@
 package co.unruly.control.result;
 
+import co.unruly.control.Lists;
+import co.unruly.control.matchers.ResultMatchers;
 import co.unruly.control.pair.Pair;
+import org.hamcrest.Matchers;
 import org.hamcrest.core.Is;
 import org.junit.Test;
 
@@ -8,11 +11,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static co.unruly.control.ApplicableWrapper.startWith;
 import static co.unruly.control.matchers.ResultMatchers.isFailureOf;
 import static co.unruly.control.matchers.ResultMatchers.isSuccessOf;
+import static co.unruly.control.matchers.ResultMatchers.isSuccessThat;
 import static co.unruly.control.pair.Maps.entry;
 import static co.unruly.control.pair.Maps.mapOf;
 import static co.unruly.control.result.Combiners.combineWith;
@@ -22,8 +27,10 @@ import static co.unruly.control.result.Resolvers.*;
 import static co.unruly.control.result.Result.failure;
 import static co.unruly.control.result.Result.success;
 import static co.unruly.control.result.Transformers.*;
+import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.hasItems;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
@@ -183,6 +190,22 @@ public class ResultsTest {
 
         assertThat(startWith("deux").then(extractor), isSuccessOf(2));
         assertThat(startWith("quattro").then(extractor), isFailureOf("quattro is not a french number"));
+    }
+
+    @Test
+    public void canConvertListOfResultsIntoResultOfList() {
+        List<Result<Integer, String>> results = asList(success(1), success(42), success(69));
+        Result<List<Integer>, List<String>> unwrapped = Lists.successesOrFailures(results);
+
+        assertThat(unwrapped, isSuccessOf(asList(1, 42, 69)));
+    }
+
+    @Test
+    public void canConvertListOfResultsIntoFailureOfListOfReasons() {
+        List<Result<Integer, String>> results = asList(success(1), failure("cheese"), success(69), failure("hotdog"));
+        Result<List<Integer>, List<String>> unwrapped = Lists.successesOrFailures(results);
+
+        assertThat(unwrapped, isFailureOf(asList("cheese", "hotdog")));
     }
 
     @Test
