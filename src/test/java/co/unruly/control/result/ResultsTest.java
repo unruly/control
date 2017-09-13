@@ -5,13 +5,18 @@ import org.hamcrest.core.Is;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import static co.unruly.control.ApplicableWrapper.startWith;
 import static co.unruly.control.matchers.ResultMatchers.isFailureOf;
 import static co.unruly.control.matchers.ResultMatchers.isSuccessOf;
+import static co.unruly.control.pair.Maps.entry;
+import static co.unruly.control.pair.Maps.mapOf;
 import static co.unruly.control.result.Combiners.combineWith;
+import static co.unruly.control.result.Introducers.fromMap;
 import static co.unruly.control.result.Introducers.tryTo;
 import static co.unruly.control.result.Resolvers.*;
 import static co.unruly.control.result.Result.failure;
@@ -168,6 +173,16 @@ public class ResultsTest {
         List<String> failures = results.flatMap(failures()).collect(toList());
 
         assertThat(failures, hasItems("darnit"));
+    }
+
+    @Test
+    public void canExtractValuesFromMap() {
+        Map<String, Integer> frenchNumberNames = mapOf(entry("un", 1), entry("deux", 2), entry("trois", 3));
+
+        Function<String, Result<Integer, String>> extractor = fromMap(frenchNumberNames, word -> String.format("%s is not a french number", word));
+
+        assertThat(startWith("deux").then(extractor), isSuccessOf(2));
+        assertThat(startWith("quattro").then(extractor), isFailureOf("quattro is not a french number"));
     }
 
     @Test

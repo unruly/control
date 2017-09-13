@@ -2,6 +2,7 @@ package co.unruly.control.result;
 
 import co.unruly.control.ThrowingLambdas;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -188,5 +189,20 @@ public interface Introducers {
                 .apply(value)
                 .map(Result::<S, F>success)
                 .orElseGet(() -> Result.failure(value));
+    }
+
+    /**
+     * Takes a java.util.Map and a failure function, and returns a function which takes a key and returns
+     * a success of the associated value in the Map, if present, or applies the failure function to the
+     * key otherwise.
+     */
+    static <K, S, F> Function<K, Result<S, F>> fromMap(Map<K, S> map, Function<K, F> failureProvider) {
+        return key -> {
+            if(map.containsKey(key)) {
+                return Result.success(map.get(key));
+            } else {
+                return Result.failure(failureProvider.apply(key));
+            }
+        };
     }
 }
