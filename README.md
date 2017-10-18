@@ -1,5 +1,14 @@
 [![Build Status](https://travis-ci.org/unruly/control.svg?branch=master)](https://travis-ci.org/unruly/control)
 
+## Maven
+```xml
+<dependency>
+    <groupId>co.unruly</groupId>
+    <artifactId>control</artifactId>
+    <version>0.8.6</version>
+</dependency>
+```
+
 ## Control
 
 co.unruly.Control is a collection of functional control-flow primitives and utilities, built around a `Result` type.
