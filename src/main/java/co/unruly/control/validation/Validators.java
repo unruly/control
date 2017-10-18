@@ -3,13 +3,20 @@ package co.unruly.control.validation;
 
 import co.unruly.control.Optionals;
 import co.unruly.control.ThrowingLambdas.ThrowingFunction;
+import co.unruly.control.result.Result;
 
 import java.util.Arrays;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+
+import static co.unruly.control.result.Result.failure;
+import static co.unruly.control.result.Result.success;
+import static co.unruly.control.result.Transformers.onFailure;
+import static co.unruly.control.result.Transformers.recover;
 
 public interface Validators {
 
@@ -72,6 +79,12 @@ public interface Validators {
                 return Stream.of(errorMapper.apply(ex));
             }
         };
+    }
+
+    public static <T, E> Function<Result<T, FailedValidation<T, E>>, Result<T, FailedValidation<T, E>>> ignoreWhen(Predicate<E> filterCondition) {
+        return result -> result
+                .then(onFailure(fv -> new FailedValidation<>(fv.value, fv.errors.stream().filter(filterCondition.negate()).collect(Collectors.toList()))))
+                .then(recover(fv -> fv.errors.isEmpty() ? success(fv.value) : failure(fv)));
     }
 
 }

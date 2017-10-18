@@ -1,5 +1,6 @@
 package co.unruly.control.validation;
 
+import co.unruly.control.ApplicableWrapper;
 import co.unruly.control.ThrowingLambdas;
 import co.unruly.control.matchers.ResultMatchers;
 import co.unruly.control.pair.Pair;
@@ -14,10 +15,14 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static co.unruly.control.ApplicableWrapper.startWith;
 import static co.unruly.control.matchers.ResultMatchers.isSuccessOf;
 import static co.unruly.control.result.Resolvers.*;
+import static co.unruly.control.result.Result.failure;
+import static co.unruly.control.result.Result.success;
 import static co.unruly.control.result.Transformers.onFailureDo;
 import static co.unruly.control.result.Transformers.onSuccessDo;
+import static co.unruly.control.validation.Validators.*;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.hasItems;
@@ -28,7 +33,7 @@ public class ValidatorTest {
 
     @Test
     public void canCreateValidatorsWithFixedErrorMessages() {
-        Validator<Integer, String> isEven = Validators.acceptIf(divisibleBy(2), "odd");
+        Validator<Integer, String> isEven = acceptIf(divisibleBy(2), "odd");
 
         Result<Integer, FailedValidation<Integer, String>> validate4 = isEven.apply(4);
         Result<Integer, FailedValidation<Integer, String>> validate5 = isEven.apply(5);
@@ -41,7 +46,7 @@ public class ValidatorTest {
 
     @Test
     public void canCreateValidatorsWithDynamicErrorMessages() {
-        Validator<Integer, String> isEven = Validators.acceptIf(divisibleBy(2), x -> String.format("%d is odd", x));
+        Validator<Integer, String> isEven = acceptIf(divisibleBy(2), x -> String.format("%d is odd", x));
 
         Result<Integer, FailedValidation<Integer, String>> validate4 = isEven.apply(4);
         Result<Integer, FailedValidation<Integer, String>> validate5 = isEven.apply(5);
@@ -53,9 +58,9 @@ public class ValidatorTest {
 
     @Test
     public void canComposeValidators() {
-        Validator<Integer, String> fizzbuzz = Validators.compose(
-                Validators.rejectIf(divisibleBy(3), "fizz"),
-                Validators.rejectIf(divisibleBy(5), x -> String.format("%d is a buzz", x)));
+        Validator<Integer, String> fizzbuzz = compose(
+                rejectIf(divisibleBy(3), "fizz"),
+                rejectIf(divisibleBy(5), x -> String.format("%d is a buzz", x)));
 
         Result<Integer, FailedValidation<Integer, String>> validate4 = fizzbuzz.apply(4);
         Result<Integer, FailedValidation<Integer, String>> validate5 = fizzbuzz.apply(15);
@@ -68,9 +73,9 @@ public class ValidatorTest {
 
     @Test
     public void canComposeValidatorsForFirstError() {
-        Validator<Integer, String> fizzbuzz = Validators.firstOf(Validators.compose(
-                Validators.rejectIf(divisibleBy(3), "fizz"),
-                Validators.rejectIf(divisibleBy(5), x -> String.format("%d is a buzz", x))));
+        Validator<Integer, String> fizzbuzz = firstOf(compose(
+                rejectIf(divisibleBy(3), "fizz"),
+                rejectIf(divisibleBy(5), x -> String.format("%d is a buzz", x))));
 
         Result<Integer, FailedValidation<Integer, String>> validate5 = fizzbuzz.apply(5);
         Result<Integer, FailedValidation<Integer, String>> validate15 = fizzbuzz.apply(15);
@@ -81,15 +86,15 @@ public class ValidatorTest {
 
     @Test
     public void doesNotExecuteValidatorsIfAlreadyFailedAndOnlyReportingFirst() {
-        Validator<Integer, String> fizzbuzz = Validators.firstOf(Validators.compose(
-                Validators.rejectIf(divisibleBy(3), "fizz"),
-                Validators.rejectIf(divisibleBy(5), x -> { throw new AssertionError("should not exercise this method"); })));
+        Validator<Integer, String> fizzbuzz = firstOf(compose(
+                rejectIf(divisibleBy(3), "fizz"),
+                rejectIf(divisibleBy(5), x -> { throw new AssertionError("should not exercise this method"); })));
 
-        Validator<Integer, String> biglittle = Validators.firstOf(Validators.compose(
-                Validators.rejectIf(x -> x > 10, "big"),
-                Validators.rejectIf(x -> x < 3, x -> { throw new AssertionError("should not exercise this method"); })));
+        Validator<Integer, String> biglittle = firstOf(compose(
+                rejectIf(x -> x > 10, "big"),
+                rejectIf(x -> x < 3, x -> { throw new AssertionError("should not exercise this method"); })));
 
-        Validator<Integer, String> combined = Validators.compose(fizzbuzz, biglittle);
+        Validator<Integer, String> combined = compose(fizzbuzz, biglittle);
 
         Result<Integer, FailedValidation<Integer, String>> validate15 = combined.apply(15);
 
@@ -98,7 +103,7 @@ public class ValidatorTest {
 
     @Test
     public void canStreamSuccesses() {
-        Validator<Integer, String> isEven = Validators.acceptIf(divisibleBy(2), "odd");
+        Validator<Integer, String> isEven = acceptIf(divisibleBy(2), "odd");
 
         List<Integer> evens = Stream.of(1,2,3,4,5,6,7,8,9)
                 .map((item) -> isEven.apply(item))
@@ -110,7 +115,7 @@ public class ValidatorTest {
 
     @Test
     public void canStreamFailures() {
-        Validator<Integer, String> isEven = Validators.acceptIf(divisibleBy(2), "odd");
+        Validator<Integer, String> isEven = acceptIf(divisibleBy(2), "odd");
 
         List<FailedValidation<Integer, String>> odds = Stream.of(1, 2, 3, 4, 5, 6, 7, 8, 9)
                 .map((item) -> isEven.apply(item))
@@ -129,11 +134,11 @@ public class ValidatorTest {
     public void canConsumeSuccesses() {
         Consumer<Integer> log = mock(Consumer.class);
 
-        Validator<Integer, String> isPrime = Validators.compose(
-                Validators.rejectIf(multipleOf(2), x -> x + " divides by 2"),
-                Validators.rejectIf(multipleOf(3), x -> x + " divides by 3"),
-                Validators.rejectIf(multipleOf(5), x -> x + " divides by 5"),
-                Validators.rejectIf(multipleOf(7), x -> x + " divides by 7")
+        Validator<Integer, String> isPrime = compose(
+                rejectIf(multipleOf(2), x -> x + " divides by 2"),
+                rejectIf(multipleOf(3), x -> x + " divides by 3"),
+                rejectIf(multipleOf(5), x -> x + " divides by 5"),
+                rejectIf(multipleOf(7), x -> x + " divides by 7")
         );
 
         Stream.of(1,2,3,4,5,6,7,8,9).map((item) -> isPrime.apply(item)).forEach(onSuccessDo(log));
@@ -150,11 +155,11 @@ public class ValidatorTest {
     public void canConsumeFailures() {
         Consumer<FailedValidation<Integer, String>> log = mock(Consumer.class);
 
-        Validator<Integer, String> isPrime = Validators.compose(
-                Validators.rejectIf(multipleOf(2), x -> x + " divides by 2"),
-                Validators.rejectIf(multipleOf(3), x -> x + " divides by 3"),
-                Validators.rejectIf(multipleOf(5), x -> x + " divides by 5"),
-                Validators.rejectIf(multipleOf(7), x -> x + " divides by 7")
+        Validator<Integer, String> isPrime = compose(
+                rejectIf(multipleOf(2), x -> x + " divides by 2"),
+                rejectIf(multipleOf(3), x -> x + " divides by 3"),
+                rejectIf(multipleOf(5), x -> x + " divides by 5"),
+                rejectIf(multipleOf(7), x -> x + " divides by 7")
         );
 
         Stream.of(1,2,3,4,5,6,7,8,9).map((item) -> isPrime.apply(item)).forEach(onFailureDo(log));
@@ -170,11 +175,11 @@ public class ValidatorTest {
     public void canFireFirstErrorForEachFailure() {
         Consumer<FailedValidation<Integer, String>> log = mock(Consumer.class);
 
-        Validator<Integer, String> isPrime = Validators.firstOf(Validators.compose(
-                Validators.rejectIf(multipleOf(2), x -> x + " divides by 2"),
-                Validators.rejectIf(multipleOf(3), x -> x + " divides by 3"),
-                Validators.rejectIf(multipleOf(5), x -> x + " divides by 5"),
-                Validators.rejectIf(multipleOf(7), x -> x + " divides by 7")
+        Validator<Integer, String> isPrime = firstOf(compose(
+                rejectIf(multipleOf(2), x -> x + " divides by 2"),
+                rejectIf(multipleOf(3), x -> x + " divides by 3"),
+                rejectIf(multipleOf(5), x -> x + " divides by 5"),
+                rejectIf(multipleOf(7), x -> x + " divides by 7")
         ));
 
         Stream.of(1,2,3,4,5,6,7,8,9).map((item) -> isPrime.apply(item)).forEach(onFailureDo(log));
@@ -188,11 +193,11 @@ public class ValidatorTest {
 
     @Test
     public void canCreateConditionalValidator() {
-        Validator<List<Integer>, String> containsEvens = Validators.acceptIf(
+        Validator<List<Integer>, String> containsEvens = acceptIf(
                 list -> list.stream().filter(x -> x % 2 == 0).collect(Collectors.toList()).isEmpty(),
                 "List contains even numbers");
 
-        Validator<List<Integer>, String> onlyChecksEvenLengthLists = Validators.onlyIf(
+        Validator<List<Integer>, String> onlyChecksEvenLengthLists = onlyIf(
                 list -> list.size() % 2 == 0,
                 containsEvens
         );
@@ -208,11 +213,11 @@ public class ValidatorTest {
     public void canFireAllErrorsForEachFailure() {
         BiConsumer<Integer, String> log = mock(BiConsumer.class);
 
-        Validator<Integer, String> isPrime = Validators.compose(
-                Validators.rejectIf(multipleOf(2), x -> x + " divides by 2"),
-                Validators.rejectIf(multipleOf(3), x -> x + " divides by 3"),
-                Validators.rejectIf(multipleOf(5), x -> x + " divides by 5"),
-                Validators.rejectIf(multipleOf(7), x -> x + " divides by 7")
+        Validator<Integer, String> isPrime = compose(
+                rejectIf(multipleOf(2), x -> x + " divides by 2"),
+                rejectIf(multipleOf(3), x -> x + " divides by 3"),
+                rejectIf(multipleOf(5), x -> x + " divides by 5"),
+                rejectIf(multipleOf(7), x -> x + " divides by 7")
         );
 
         Stream.of(1,2,3,4,5,6,7,8,9).map((item) -> isPrime.apply(item)).forEach(onFailureDo(v -> v.errors.forEach(e -> log.accept(v.value, e))));
@@ -229,11 +234,11 @@ public class ValidatorTest {
     public void canMapErrors() {
         BiConsumer<Integer, String> log = mock(BiConsumer.class);
 
-        Validator<Integer, String> isPrime = Validators.mappingErrors(Validators.compose(
-                Validators.rejectIf(multipleOf(2), x -> x + " divides by 2"),
-                Validators.rejectIf(multipleOf(3), x -> x + " divides by 3"),
-                Validators.rejectIf(multipleOf(5), x -> x + " divides by 5"),
-                Validators.rejectIf(multipleOf(7), x -> x + " divides by 7")
+        Validator<Integer, String> isPrime = mappingErrors(compose(
+                rejectIf(multipleOf(2), x -> x + " divides by 2"),
+                rejectIf(multipleOf(3), x -> x + " divides by 3"),
+                rejectIf(multipleOf(5), x -> x + " divides by 5"),
+                rejectIf(multipleOf(7), x -> x + " divides by 7")
         ), (num, msg) -> msg + ", oh boy");
 
         Stream.of(1,2,3,4,5,6,7,8,9).map((item) -> isPrime.apply(item)).forEach(onFailureDo(v -> v.errors.forEach(e -> log.accept(v.value, e))));
@@ -248,11 +253,11 @@ public class ValidatorTest {
 
     @Test
     public void canSplitResults() {
-        Validator<Integer, String> isPrime = Validators.compose(
-                Validators.rejectIf(multipleOf(2), x -> x + " divides by 2"),
-                Validators.rejectIf(multipleOf(3), x -> x + " divides by 3"),
-                Validators.rejectIf(multipleOf(5), x -> x + " divides by 5"),
-                Validators.rejectIf(multipleOf(7), x -> x + " divides by 7")
+        Validator<Integer, String> isPrime = compose(
+                rejectIf(multipleOf(2), x -> x + " divides by 2"),
+                rejectIf(multipleOf(3), x -> x + " divides by 3"),
+                rejectIf(multipleOf(5), x -> x + " divides by 5"),
+                rejectIf(multipleOf(7), x -> x + " divides by 7")
         );
 
         Pair<List<Integer>, List<FailedValidation<Integer, String>>> results = Stream
@@ -266,6 +271,26 @@ public class ValidatorTest {
                 validationFailure(6, "6 divides by 2", "6 divides by 3"),
                 validationFailure(8, "8 divides by 2")
                 ));
+    }
+
+    @Test
+    public void canIgnoreErrors() {
+        Result<Integer, FailedValidation<Integer, String>> failedValidation = failure(new FailedValidation(42, asList("fail1", "fail2", "error1")));
+
+        Result<Integer, FailedValidation<Integer, String>> filteredValidation = failedValidation
+                .then(ignoreWhen(error -> error.startsWith("fail")));
+
+        assertThat(filteredValidation, isFailedValidationOf(42, "error1"));
+    }
+
+    @Test
+    public void convertsToSuccessWhenAllErrorsIgnored() {
+        Result<Integer, FailedValidation<Integer, String>> failedValidation = failure(new FailedValidation(42, asList("fail1", "fail2", "fail3")));
+
+        Result<Integer, FailedValidation<Integer, String>> filteredValidation = failedValidation
+                .then(ignoreWhen(error -> error.startsWith("fail")));
+
+        assertThat(filteredValidation, isSuccessOf(42));
     }
 
     @Test
