@@ -2,6 +2,7 @@ package co.unruly.control.validation;
 
 
 import co.unruly.control.Optionals;
+import co.unruly.control.ThrowingLambdas.ThrowingFunction;
 
 import java.util.Arrays;
 import java.util.function.BiFunction;
@@ -47,6 +48,16 @@ public interface Validators {
 
     public static <T, T1, E> Validator<T, E> on(Function<T, T1> accessor, Validator<T1, E> innerValidator) {
         return t -> innerValidator.validate(accessor.apply(t));
+    }
+
+    public static <T, T1, E, X extends Exception> Validator<T, E> tryOn(ThrowingFunction<T, T1, X> accessor, Function<Exception, E> onException, Validator<T1, E> innerValidator) {
+        return t -> {
+            try {
+                return innerValidator.validate(accessor.apply(t));
+            } catch (Exception e) {
+                return Stream.of(onException.apply(e));
+            }
+        };
     }
 
     public static <T, T1, E> Validator<T, E> onEach(Function<T, Iterable<T1>> iterator, Validator<T1, E> innerValidator) {
