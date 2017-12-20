@@ -2,19 +2,16 @@ package co.unruly.control;
 
 import co.unruly.control.pair.Pair;
 
-import java.util.Iterator;
-import java.util.Objects;
-import java.util.Spliterator;
-import java.util.Spliterators;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.iterate;
 
 public interface HigherOrderFunctions {
@@ -107,6 +104,13 @@ public interface HigherOrderFunctions {
         return (a.isParallel() || b.isParallel())
             ? StreamSupport.stream(split, true)
             : StreamSupport.stream(split, false);
+    }
+
+    /**
+     * Takes two lists, and returns a list of pairs forming the Cartesian product of those lists.
+     */
+    static <A, B> List<Pair<A, B>> pairs(List<A> as, List<B> bs) {
+        return as.stream().flatMap(a -> bs.stream().map(b -> Pair.of(a, b))).collect(toList());
     }
 
     /**
