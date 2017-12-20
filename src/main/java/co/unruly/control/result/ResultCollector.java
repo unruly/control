@@ -20,11 +20,13 @@ import static java.util.stream.Collectors.toList;
  * Collects a Stream of Results into a Pair, with the left being a list of success values
  * and the right being a list of failure values.
  */
-class ResultCollector<L, R>
-        implements Collector<
-        Result<L, R>,
-        Pair<List<L>, List<R>>,
-        Pair<List<L>, List<R>>> {
+class ResultCollector<L, R, T> implements Collector<Result<L, R>, Pair<List<L>, List<R>>, T> {
+
+    private final Function<Pair<List<L>, List<R>>, T> finisher;
+
+    ResultCollector(Function<Pair<List<L>, List<R>>, T> finisher) {
+        this.finisher = finisher;
+    }
 
     @Override
     public Supplier<Pair<List<L>, List<R>>> supplier() {
@@ -45,8 +47,8 @@ class ResultCollector<L, R>
     }
 
     @Override
-    public Function<Pair<List<L>, List<R>>, Pair<List<L>, List<R>>> finisher() {
-        return pair -> Pair.of(unmodifiableList(pair.left), unmodifiableList(pair.right));
+    public Function<Pair<List<L>, List<R>>, T> finisher() {
+        return finisher;
     }
 
 

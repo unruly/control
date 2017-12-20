@@ -1,6 +1,7 @@
 package co.unruly.control.result;
 
 import co.unruly.control.pair.Pair;
+import co.unruly.control.pair.Pairs;
 
 import java.util.List;
 import java.util.Optional;
@@ -8,6 +9,7 @@ import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
 
+import static java.util.Collections.unmodifiableList;
 import static java.util.function.Function.identity;
 import static java.util.stream.Stream.empty;
 
@@ -90,7 +92,23 @@ public interface Resolvers {
      * Collects a Stream of Results into a Pair of Lists, the left containing the unwrapped
      * success values, the right containing the unwrapped failures.
      */
-    public static <S, F> Collector<Result<S, F>, Pair<List<S>, List<F>>, Pair<List<S>, List<F>>> split() {
-        return new ResultCollector<>();
+    static <S, F> Collector<Result<S, F>, Pair<List<S>, List<F>>, Pair<List<S>, List<F>>> split() {
+        return new ResultCollector<>(pair -> Pair.of(unmodifiableList(pair.left), unmodifiableList(pair.right)));
+    }
+
+    /**
+     * Collects a Stream of Results into a Result which contains a List of Successes, if all results in
+     * the stream were successful, or a list of Failures if any failed.
+     */
+    static <S, F> Collector<Result<S, F>, Pair<List<S>, List<F>>, Result<List<S>, List<F>>> allSucceeded() {
+        return new ResultCollector<>(Pairs::anyFailures);
+    }
+
+    /**
+     * Collects a Stream of Results into a Result which contains a List of Successes, if any results in
+     * the stream were successful, or a list of Failures if all failed.
+     */
+    static <S, F> Collector<Result<S, F>, Pair<List<S>, List<F>>, Result<List<S>, List<F>>> anySucceeded() {
+        return new ResultCollector<>(Pairs::anySuccesses);
     }
 }
