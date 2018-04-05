@@ -101,8 +101,10 @@ public class PairTest {
 
     @Test
     public void canAggregateOptionalPairs() {
-        Optional<String> actual = allOf(Optional.of("hello"), Optional.of("world"))
-                .map(onAll((a, b) -> a + ", " + b));
+        Optional<String> actual = allOf(
+            Optional.of("hello"),
+            Optional.of("world")
+        ).map(onAll((a, b) -> a + ", " + b));
 
         assertThat(actual, is(Optional.of("hello, world")));
     }

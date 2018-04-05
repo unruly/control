@@ -1,9 +1,8 @@
 package co.unruly.control.result;
 
 import co.unruly.control.Lists;
-import co.unruly.control.matchers.ResultMatchers;
+import co.unruly.control.pair.Comprehensions;
 import co.unruly.control.pair.Pair;
-import org.hamcrest.Matchers;
 import org.hamcrest.core.Is;
 import org.junit.Test;
 
@@ -11,13 +10,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static co.unruly.control.ApplicableWrapper.startWith;
 import static co.unruly.control.matchers.ResultMatchers.isFailureOf;
 import static co.unruly.control.matchers.ResultMatchers.isSuccessOf;
-import static co.unruly.control.matchers.ResultMatchers.isSuccessThat;
+import static co.unruly.control.pair.Comprehensions.onAll;
 import static co.unruly.control.pair.Maps.entry;
 import static co.unruly.control.pair.Maps.mapOf;
 import static co.unruly.control.result.Combiners.combineWith;
@@ -30,7 +28,6 @@ import static co.unruly.control.result.Transformers.*;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.hasItems;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
@@ -161,8 +158,8 @@ public class ResultsTest {
 
     @Test
     public void canMergeOperationsOnTwoResults() {
-        Result<Integer, String> evenSix = Result.success(6);
-        Result<Integer, String> evenTwo = Result.success(2);
+        Result<Integer, String> evenSix = success(6);
+        Result<Integer, String> evenTwo = success(2);
 
         Result<Integer, String> oddFive = Result.failure("Five is odd");
         Result<Integer, String> oddSeven = Result.failure("Seven is odd");
@@ -240,5 +237,73 @@ public class ResultsTest {
 
         assertThat(halvedNumbers.left, hasItems(3L));
         assertThat(halvedNumbers.right, hasItems("java.lang.NumberFormatException: For input string: \"NaN\"", "5 is odd"));
+    }
+
+    @Test
+    public void shouldAggregateResults_BothSuccessful() {
+        Result<String, ?> actualResult = Comprehensions
+            .allOf(
+                success("Yay!"),
+                success(123)
+            )
+            .then(onSuccess(onAll((x, y) -> x + " = " + y)));
+
+        assertThat(actualResult, isSuccessOf("Yay! = 123"));
+    }
+
+    @Test
+    public void shouldAggregateResults_OneFailure(){
+        Result<String, String> result = Comprehensions.allOf(
+            success("Yes!"),
+            failure("No!")
+        ).then(onSuccess(onAll((x, y) -> x + " = " + y)));
+
+        assertThat(result, isFailureOf("No!"));
+    }
+
+    @Test
+    public void shouldAggregateResults_AllThreeSuccessful() {
+        Result<String, ?> song = Comprehensions.allOf(
+            success("bibbidy"),
+            success("bobbidy"),
+            success("boo")
+        ).then(onSuccess(onAll((x,y,z) -> x + " " + y + " " + z)));
+
+        assertThat(song, isSuccessOf("bibbidy bobbidy boo"));
+    }
+
+    @Test
+    public void shouldAggregateResults_AllThreeFailed() {
+        Result<?, String> uhoh = Comprehensions.allOf(
+            failure("no"),
+            failure("noo"),
+            failure("nooo")
+        ).then(onSuccess(onAll((x,y,z) -> x + " " + y + " " + z)));
+
+        assertThat(uhoh, isFailureOf("no"));
+    }
+
+    @Test
+    public void shouldAggregateResults_AllFourPassed() {
+        Result<String, ?> result = Comprehensions.allOf(
+            success("Yes"),
+            success("YesYes"),
+            success("YesYesYes"),
+            success("YesYesYesYes")
+        ).then(onSuccess(onAll((a,b,c,d) -> a + b + c + d )));
+        
+        assertThat(result, isSuccessOf("YesYesYesYesYesYesYesYesYesYes"));
+    }
+
+    @Test
+    public void shouldAggregateResults_AllFourFailures() {
+        Result<?, String> result = Comprehensions.allOf(
+            failure("NoNo", String.class),
+            failure("NoNoNoNo"),
+            failure("NoNoNoNo"),
+            failure("NoNo") // There's no limit
+        ).then(onSuccess(onAll((a,b,c,d) -> a + b + c + d )));
+
+        assertThat(result, isFailureOf("NoNo"));
     }
 }
