@@ -1,6 +1,7 @@
 package co.unruly.control.pair;
 
 import java.util.Objects;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
@@ -42,6 +43,13 @@ public class Pair<L, R> {
      */
     public <T> T then(Function<Pair<L, R>, T> function) {
         return function.apply(this);
+    }
+
+    /**
+     * Applies the given bifunction to this pair, using left for the first argument and right for the second
+     */
+    public <T> T then(BiFunction<L, R, T> function) {
+        return function.apply(this.left, this.right);
     }
 
     @Override

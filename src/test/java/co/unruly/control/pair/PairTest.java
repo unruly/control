@@ -7,6 +7,7 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static co.unruly.control.pair.Maps.entry;
@@ -95,6 +96,27 @@ public class PairTest {
         ).collect(toMap());
 
         assertThat(actualMap, is(expectedMap));
+    }
+
+    @Test
+    public void canAggregateOptionalPairs() {
+        Optional<String> actual = both(Optional.of("hello"), Optional.of("world"))
+                .map(onBoth((a, b) -> a + ", " + b));
+
+        assertThat(actual, is(Optional.of("hello, world")));
+    }
+
+    @Test
+    public void whenAggregatingOptionalPairsEitherEmptyYieldsAnEmptyResult() {
+        Optional<String> firstEmpty = both(Optional.empty(), Optional.of("world"))
+                .map(onBoth((a, b) -> a + ", " + b));
+
+        Optional<String> secondEmpty = both(Optional.of("hello"), Optional.empty())
+                .map(onBoth((a, b) -> a + ", " + b));
+
+
+        assertThat(firstEmpty, is(Optional.empty()));
+        assertThat(secondEmpty, is(Optional.empty()));
     }
 
 }

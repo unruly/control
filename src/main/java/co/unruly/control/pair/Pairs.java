@@ -4,6 +4,8 @@ import co.unruly.control.result.Result;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.IntFunction;
@@ -16,6 +18,14 @@ import static co.unruly.control.result.Result.success;
  * Convenience functions on Pairs
  */
 public interface Pairs {
+
+    static <L, R> Optional<Pair<L, R>> both(Optional<L> maybeLeft, Optional<R> maybeRight) {
+        return maybeLeft.flatMap(left -> maybeRight.map(right -> Pair.of(left, right)));
+    }
+
+    static <L, R, T> Function<Pair<L, R>, T> onBoth(BiFunction<L, R, T> f) {
+        return pair -> pair.then(f);
+    }
 
     /**
      * Applies the given function to the left element of a Pair, returning a new Pair with the result of that
