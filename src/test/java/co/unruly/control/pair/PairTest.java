@@ -1,6 +1,5 @@
 package co.unruly.control.pair;
 
-import co.unruly.control.pair.Pair;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
@@ -14,6 +13,8 @@ import static co.unruly.control.pair.Maps.entry;
 import static co.unruly.control.pair.Maps.mapOf;
 import static co.unruly.control.pair.Maps.toMap;
 import static co.unruly.control.pair.Pairs.*;
+import static co.unruly.control.pair.Comprehensions.allOf;
+import static co.unruly.control.pair.Comprehensions.onAll;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.is;
@@ -100,19 +101,30 @@ public class PairTest {
 
     @Test
     public void canAggregateOptionalPairs() {
-        Optional<String> actual = both(Optional.of("hello"), Optional.of("world"))
-                .map(onBoth((a, b) -> a + ", " + b));
+        Optional<String> actual = allOf(Optional.of("hello"), Optional.of("world"))
+                .map(onAll((a, b) -> a + ", " + b));
 
         assertThat(actual, is(Optional.of("hello, world")));
     }
 
     @Test
-    public void whenAggregatingOptionalPairsEitherEmptyYieldsAnEmptyResult() {
-        Optional<String> firstEmpty = both(Optional.empty(), Optional.of("world"))
-                .map(onBoth((a, b) -> a + ", " + b));
+    public void canAggregateOptionalTriples() {
+        Optional<String> actual = allOf(
+                Optional.of("piff"),
+                Optional.of("paff"),
+                Optional.of("poff")
+        ).map(onAll((a, b, c) -> a + ", " + b + ", " + c));
 
-        Optional<String> secondEmpty = both(Optional.of("hello"), Optional.empty())
-                .map(onBoth((a, b) -> a + ", " + b));
+        assertThat(actual, is(Optional.of("piff, paff, poff")));
+    }
+
+    @Test
+    public void whenAggregatingOptionalPairsEitherEmptyYieldsAnEmptyResult() {
+        Optional<String> firstEmpty = allOf(Optional.empty(), Optional.of("world"))
+                .map(onAll((a, b) -> a + ", " + b));
+
+        Optional<String> secondEmpty = allOf(Optional.of("hello"), Optional.empty())
+                .map(onAll((a, b) -> a + ", " + b));
 
 
         assertThat(firstEmpty, is(Optional.empty()));

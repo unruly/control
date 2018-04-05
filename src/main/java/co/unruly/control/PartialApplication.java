@@ -1,5 +1,7 @@
 package co.unruly.control;
 
+import co.unruly.control.pair.Triple.TriFunction;
+
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -53,10 +55,5 @@ public interface PartialApplication {
      */
     static <A, B, C, R> Function<C, R> bind(TriFunction<A, B, C, R> f, A firstParam, B secondParam) {
         return thirdParam -> f.apply(firstParam, secondParam, thirdParam);
-    }
-
-    @FunctionalInterface
-    public interface TriFunction<A, B, C, R> {
-        R apply(A a, B b, C c);
     }
 }

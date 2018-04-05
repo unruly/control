@@ -19,14 +19,6 @@ import static co.unruly.control.result.Result.success;
  */
 public interface Pairs {
 
-    static <L, R> Optional<Pair<L, R>> both(Optional<L> maybeLeft, Optional<R> maybeRight) {
-        return maybeLeft.flatMap(left -> maybeRight.map(right -> Pair.of(left, right)));
-    }
-
-    static <L, R, T> Function<Pair<L, R>, T> onBoth(BiFunction<L, R, T> f) {
-        return pair -> pair.then(f);
-    }
-
     /**
      * Applies the given function to the left element of a Pair, returning a new Pair with the result of that
      * function as the left element and the original right element untouched
