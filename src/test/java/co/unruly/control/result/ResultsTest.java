@@ -15,7 +15,7 @@ import java.util.stream.Stream;
 import static co.unruly.control.ApplicableWrapper.startWith;
 import static co.unruly.control.matchers.ResultMatchers.isFailureOf;
 import static co.unruly.control.matchers.ResultMatchers.isSuccessOf;
-import static co.unruly.control.pair.Comprehensions.onAll;
+import static co.unruly.control.pair.Comprehensions.ifAllSucceeded;
 import static co.unruly.control.pair.Maps.entry;
 import static co.unruly.control.pair.Maps.mapOf;
 import static co.unruly.control.result.Combiners.combineWith;
@@ -246,7 +246,7 @@ public class ResultsTest {
                 success("Yay!"),
                 success(123)
             )
-            .then(onSuccess(onAll((x, y) -> x + " = " + y)));
+            .then(ifAllSucceeded((x, y) -> x + " = " + y));
 
         assertThat(actualResult, isSuccessOf("Yay! = 123"));
     }
@@ -256,7 +256,7 @@ public class ResultsTest {
         Result<String, String> result = Comprehensions.allOf(
             success("Yes!"),
             failure("No!")
-        ).then(onSuccess(onAll((x, y) -> x + " = " + y)));
+        ).then(ifAllSucceeded((x, y) -> x + " = " + y));
 
         assertThat(result, isFailureOf("No!"));
     }
@@ -267,7 +267,7 @@ public class ResultsTest {
             success("bibbidy"),
             success("bobbidy"),
             success("boo")
-        ).then(onSuccess(onAll((x,y,z) -> x + " " + y + " " + z)));
+        ).then(ifAllSucceeded((x, y, z) -> x + " " + y + " " + z));
 
         assertThat(song, isSuccessOf("bibbidy bobbidy boo"));
     }
@@ -278,7 +278,7 @@ public class ResultsTest {
             failure("no"),
             failure("noo"),
             failure("nooo")
-        ).then(onSuccess(onAll((x,y,z) -> x + " " + y + " " + z)));
+        ).then(ifAllSucceeded((x, y, z) -> x + " " + y + " " + z));
 
         assertThat(uhoh, isFailureOf("no"));
     }
@@ -290,8 +290,8 @@ public class ResultsTest {
             success("YesYes"),
             success("YesYesYes"),
             success("YesYesYesYes")
-        ).then(onSuccess(onAll((a,b,c,d) -> a + b + c + d )));
-        
+        ).then(ifAllSucceeded((a, b, c, d) -> a + b + c + d));
+
         assertThat(result, isSuccessOf("YesYesYesYesYesYesYesYesYesYes"));
     }
 
@@ -302,7 +302,7 @@ public class ResultsTest {
             failure("NoNoNoNo"),
             failure("NoNoNoNo"),
             failure("NoNo") // There's no limit
-        ).then(onSuccess(onAll((a,b,c,d) -> a + b + c + d )));
+        ).then(ifAllSucceeded((a, b, c, d) -> a + b + c + d));
 
         assertThat(result, isFailureOf("NoNo"));
     }
