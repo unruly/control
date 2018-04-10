@@ -1,6 +1,5 @@
 package co.unruly.control.validation;
 
-import co.unruly.control.ApplicableWrapper;
 import co.unruly.control.ThrowingLambdas;
 import co.unruly.control.matchers.ResultMatchers;
 import co.unruly.control.pair.Pair;
@@ -15,7 +14,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static co.unruly.control.ApplicableWrapper.startWith;
 import static co.unruly.control.matchers.ResultMatchers.isSuccessOf;
 import static co.unruly.control.result.Resolvers.*;
 import static co.unruly.control.result.Result.failure;

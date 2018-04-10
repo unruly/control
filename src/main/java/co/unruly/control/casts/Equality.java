@@ -2,7 +2,7 @@ package co.unruly.control.casts;
 
 import java.util.function.BiPredicate;
 
-import static co.unruly.control.ApplicableWrapper.startWith;
+import static co.unruly.control.Piper.pipe;
 import static co.unruly.control.result.Introducers.exactCastTo;
 import static co.unruly.control.result.Resolvers.ifFailed;
 import static co.unruly.control.result.Transformers.onSuccess;
@@ -18,9 +18,10 @@ public interface Equality {
             return false;
         }
 
-        return startWith(other)
+        return pipe(other)
             .then(exactCastTo((Class<T>)self.getClass()))
             .then(onSuccess(o -> equalityChecker.test(self, o)))
-            .then(ifFailed(__ -> false));
+            .then(ifFailed(__ -> false))
+            .resolve();
     }
 }

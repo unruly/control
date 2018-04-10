@@ -3,7 +3,7 @@ package co.unruly.control.result;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import static co.unruly.control.ApplicableWrapper.startWith;
+import static co.unruly.control.Piper.pipe;
 import static co.unruly.control.HigherOrderFunctions.compose;
 import static co.unruly.control.result.Resolvers.ifFailed;
 
@@ -44,9 +44,10 @@ public class Match {
      */
     @SafeVarargs
     public static <I, O> BoundMatchAttempt<I, O> matchValue(I inputValue, Function<I, Result<O, I>>... potentialMatchers) {
-        return f -> startWith(inputValue)
+        return f -> pipe(inputValue)
                 .then(attemptMatch(potentialMatchers))
-                .then(ifFailed(f));
+                .then(ifFailed(f))
+                .resolve();
     }
 
     @FunctionalInterface

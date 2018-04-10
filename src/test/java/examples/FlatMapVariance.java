@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static co.unruly.control.ApplicableWrapper.startWith;
+import static co.unruly.control.Piper.pipe;
 import static co.unruly.control.result.Resolvers.collapse;
 import static co.unruly.control.result.Transformers.*;
 import static co.unruly.control.result.TypeOf.using;
@@ -43,21 +43,23 @@ public class FlatMapVariance {
 
         Validator<String, String> under100 = rejectIf(s -> s.length() > 2, s -> s + " is too damn high");
 
-        return startWith(m)
+        return pipe(m)
                 .then(fizzbuzz)
                 .then(onSuccess(x -> Integer.toString(x)))
                 .then(using(TypeOf.<List<String>>forFailures()))
                 .then(attempt(under100))
                 .then(onSuccess(s -> "Great success! " + s))
                 .then(onFailure(f -> "Big fails :( " + String.join(", ", f)))
-                .then(collapse());
+                .then(collapse())
+                .resolve();
     }
 
     public void canFlatmapErrorTypeOfFailedValidationIntoErrorTypeOfListOfString() {
-        Result<Integer, List<String>> foo = startWith(4)
+        Result<Integer, List<String>> foo = pipe(4)
             .then(fizzbuzz)
             .then(using(TypeOf.<List<String>>forFailures()))
-            .then(attempt(this::listFactors));
+            .then(attempt(this::listFactors))
+            .resolve();
     }
 
     public void canFlatmapErrorTypeOfListOfStringIntoErrorTypeOfFailedValidation() {

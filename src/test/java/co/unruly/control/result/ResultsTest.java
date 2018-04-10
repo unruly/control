@@ -12,7 +12,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import static co.unruly.control.ApplicableWrapper.startWith;
 import static co.unruly.control.matchers.ResultMatchers.isFailureOf;
 import static co.unruly.control.matchers.ResultMatchers.isSuccessOf;
 import static co.unruly.control.pair.Comprehensions.ifAllSucceeded;
@@ -185,8 +184,8 @@ public class ResultsTest {
 
         Function<String, Result<Integer, String>> extractor = fromMap(frenchNumberNames, word -> String.format("%s is not a french number", word));
 
-        assertThat(startWith("deux").then(extractor), isSuccessOf(2));
-        assertThat(startWith("quattro").then(extractor), isFailureOf("quattro is not a french number"));
+        assertThat(extractor.apply("deux"), isSuccessOf(2));
+        assertThat(extractor.apply("quattro"), isFailureOf("quattro is not a french number"));
     }
 
     @Test
