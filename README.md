@@ -95,7 +95,7 @@ public static String describeNovelSales(Author author, Publisher publisher, Edit
 
 Whilst `onSuccess()` and `attempt()` are the most common ways to transform a `Result` into another `Result`,
 other use cases exist. A collection of such functions exists in 
-[`co.unruly.control.result.Transformers`]((https://javadoc.io/page/co.unruly/control/latest/co/unruly/control/result/Transformers.html)).
+[`co.unruly.control.result.Transformers`](https://javadoc.io/page/co.unruly/control/latest/co/unruly/control/result/Transformers.html).
 
 #### Extracting a value from a Result: Resolvers
 
