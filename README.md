@@ -41,8 +41,8 @@ There are also many common repeated patterns of operations which can fail.
 For example, you may have some code which creates `Optional`s, which you would like 
 to convert to `Result`s in order to better track failure causes. 
 
-For this, `co.unruly.control.result.Introducers` contains a selection of useful functions
-which yield `Result`s:
+For this, [`co.unruly.control.result.Introducers`](https://www.javadoc.io/doc/co.unruly/control/latest/co/unruly/control/result/Introducers.html) 
+contains a selection of useful functions which yield `Result`s:
 
 ```java
 public Result<Integer, String> asResult(Optional<Integer> maybeNumber) {
