@@ -13,7 +13,8 @@
 
 ## Control
 
-co.unruly.Control is a collection of functional control-flow primitives and utilities, built around a `Result` type.
+co.unruly.Control is a collection of functional control-flow primitives and utilities, built around a 
+[`Result`](https://javadoc.io/page/co.unruly/control/latest/co/unruly/control/result/Result.html) type.
 
 ### Result
 
@@ -41,7 +42,7 @@ There are also many common repeated patterns of operations which can fail.
 For example, you may have some code which creates `Optional`s, which you would like 
 to convert to `Result`s in order to better track failure causes. 
 
-For this, [`co.unruly.control.result.Introducers`](https://www.javadoc.io/doc/co.unruly/control/latest/co/unruly/control/result/Introducers.html) 
+For this, [`co.unruly.control.result.Introducers`](https://javadoc.io/page/co.unruly/control/latest/co/unruly/control/result/Introducers.html) 
 contains a selection of useful functions which yield `Result`s:
 
 ```java
@@ -93,7 +94,8 @@ public static String describeNovelSales(Author author, Publisher publisher, Edit
 ```
 
 Whilst `onSuccess()` and `attempt()` are the most common ways to transform a `Result` into another `Result`,
-other use cases exist. A collection of such functions exists in `co.unruly.control.result.Transformers`.
+other use cases exist. A collection of such functions exists in 
+[`co.unruly.control.result.Transformers`]((https://javadoc.io/page/co.unruly/control/latest/co/unruly/control/result/Transformers.html)).
 
 #### Extracting a value from a Result: Resolvers
 
@@ -128,8 +130,9 @@ Which outputs:
 > The cake is a lie
 ```
 
-`ifFailed` and `collapse` can both be found in `co.unruly.control.result.Resolvers`, along with a
-selection of other functions to convert `Result`s into non-`Result` values.
+`ifFailed` and `collapse` can both be found in 
+[`co.unruly.control.result.Resolvers`](https://javadoc.io/page/co.unruly/control/latest/co/unruly/control/result/Resolvers.html)
+, along with a selection of other functions to convert `Result`s into non-`Result` values.
 
 #### Functional API
 
@@ -200,9 +203,11 @@ This fails to compile because the type of `fromOptional` is inferred to be
 engine can't infer the success type based on subsequent operations (namely, the type
 passed to `apply()`).
 
-Enter `Pipe`. A `Pipe` is simply a box for a value: 
+Enter [`Piper`](https://javadoc.io/page/co.unruly/control/latest/co/unruly/control/Piper.html). 
+A `Piper` is simply a box for a value: 
+
 ```java
-Pipe<Integer> pipe = Piper.pipe(42);
+Piper<Integer> pipe = Piper.pipe(42);
 ```
 
 You can then chain functions on the pipe:
