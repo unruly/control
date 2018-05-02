@@ -181,16 +181,13 @@ The functions included in this library are all higher-order functions, returning
 instances of `Function`. This includes functions to create `Result`s from non-`Result`
 values - both for consistency, and compatibility with idiomatic `Stream` usage. 
 As non-`Result` values don't implement `then()`, and there are both readability and
-generics issues, we also include `with`.
+generics issues, we also include `Piper`.
 
-##### HigherOrderFunctions.with()
+##### Piper
 
-`with()` is a function which takes a `T` and a `Function<T, R>`, and applies the function
-to the provided value. This serves two purposes: it positions the argument before the function,
-which is more consistent with the chaining style encouraged with `Result`, and secondly
-it provides the compiler with a little more assistance when inferring generic types.
+This approach is slightly more cumbersome than it could be, as Java's ability to infer 
+generic types is not particularly great. For example, the following code doesn't compile:
 
-For example, the following code doesn't compile:
 ```java
 public Result<Integer, String> asResult(Optional<Integer> maybeNumber) {
     return fromOptional(() -> "No number found. :(").apply(maybeNumber);    
@@ -201,14 +198,51 @@ This fails to compile because the type of `fromOptional` is inferred to be
 engine can't infer the success type based on subsequent operations (namely, the type
 passed to `apply()`).
 
-However, the following code does compile:
+Enter `Pipe`. A `Pipe` is simply a box for a value: 
+```java
+Pipe<Integer> pipe = Piper.pipe(42);
+```
+
+You can then chain functions on the pipe:
+
+```java
+Piper.pipe(42)              // yields a Pipe containing 42
+     .then(x -> x + 10)     // yields a Pipe containing 52
+     .then(x -> x * 2)      // yields a Pipe containing 104
+     .resolve()             // returns 104
+```
+
+This allows us to rewrite our failing-to-compile example from above as:
+
 ```java
 public Result<Integer, String> asResult(Optional<Integer> maybeNumber) {
-    return with(maybeNumber, fromOptional(() -> "No number found. :("));    
+    return pipe(maybeNumber)                                // Pipe of Optional<Integer>
+        .then(fromOptional(() -> "No number found. :("))    // Pipe of Result<Integer, String>
+        .resolve();                                         // Result<Integer, String>               
 }
 ```
-The difference here is the types of `maybeNumber` and `fromOptional` are inferred 
-simultaneously, and therefore it can properly derive both the success and failure types.
 
-Of course, `with()` is not exclusively useful with `Result`: it's a valuable tool whenever
-using higher order functions in Java.
+For short examples like this, there's also a `resolveWith()` method:
+
+```java
+public Result<Integer, String> asResult(Optional<Integer> maybeNumber) {
+    return pipe(maybeNumber)                                
+        .resolveWith(fromOptional(() -> "No number found. :("));
+}
+```
+
+`Piper.then()` functions in the same way as `Result.then()`: it applies the provided function
+to its contents. This means we can build a functional pipeline which includes both regular 
+values and Results:
+
+```java
+Result<Integer, String> result = pipe("a=1234;")                            // Piper<String>
+        .then(pattern::matcher)                                             // Piper<Matcher>            
+        .then(ifIs(Matcher::find, m -> m.group(1)))                         // Piper<Result<String, Matcher>>
+        .then(onFailure(__ -> "Could not find group to match"))             // Piper<Result<String, String>>
+        .then(attempt(tryTo(Integer::parseInt, ex -> ex.getMessage())))     // Piper<Result<Integer, String>>
+        .resolve();                                                         // Result<Integer, String>
+```
+
+Note that the use of `Piper.then()` is identical to the way we'd use `Result.then()`, except now we
+can directly chain from non-failable states into failable states. 
