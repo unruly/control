@@ -1,5 +1,7 @@
 [![Build Status](https://travis-ci.org/unruly/control.svg?branch=master)](https://travis-ci.org/unruly/control)
 
+[![Javadocs](https://www.javadoc.io/badge/co.unruly/control.svg)](https://www.javadoc.io/doc/co.unruly/control)
+
 ## Maven
 ```xml
 <dependency>
