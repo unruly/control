@@ -10,9 +10,12 @@ import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static co.unruly.control.result.Result.failure;
 import static co.unruly.control.result.Result.success;
+import static java.util.stream.Collectors.toList;
 
 /**
  * Convenience functions on Pairs
@@ -23,7 +26,7 @@ public interface Pairs {
      * Applies the given function to the left element of a Pair, returning a new Pair with the result of that
      * function as the left element and the original right element untouched
      */
-    static <OL, NL, R> Function<Pair<OL, R>, Pair<NL, R>> onLeft(Function<OL, NL> leftMapper) {
+    static <OL, NL, R> Function<Pair<OL, R>, Pair<NL, R>> onLeft(Function<? super OL, NL> leftMapper) {
         return pair -> Pair.of(leftMapper.apply(pair.left), pair.right);
     }
 
@@ -33,6 +36,28 @@ public interface Pairs {
      */
     static <L, OR, NR> Function<Pair<L, OR>, Pair<L, NR>> onRight(Function<OR, NR> rightMapper) {
         return pair -> Pair.of(pair.left, rightMapper.apply(pair.right));
+    }
+
+    /**
+     * Applies the given function to both elements off a Pair, assuming that both elements are of the
+     * same type
+     */
+    static <T, R> Function<Pair<T, T>, Pair<R, R>> onBoth(Function<T, R> f) {
+        return pair -> Pair.of(f.apply(pair.left), f.apply(pair.right));
+    }
+
+    /**
+     * Applies the given function to both elements off a Pair, yielding a non-Pair value
+     */
+    static <L, R, T> Function<Pair<L, R>, T> merge(BiFunction<L, R, T> f) {
+        return pair -> pair.then(f);
+    }
+
+    /**
+     * Merges a Pair of Lists of T into a single List of T, with the left items at the front of the list.
+     */
+    static <T> Function<Pair<List<T>, List<T>>, List<T>> mergeLists() {
+        return pair -> Stream.of(pair.left, pair.right).flatMap(List::stream).collect(toList());
     }
 
     /**
