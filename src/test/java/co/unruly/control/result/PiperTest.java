@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 import static co.unruly.control.Piper.pipe;
 import static co.unruly.control.matchers.ResultMatchers.isFailureOf;
 import static co.unruly.control.matchers.ResultMatchers.isSuccessOf;
-import static co.unruly.control.result.Introducers.ifIs;
+import static co.unruly.control.result.Recover.ifIs;
 import static co.unruly.control.result.Introducers.tryTo;
 import static co.unruly.control.result.Transformers.attempt;
 import static co.unruly.control.result.Transformers.onFailure;

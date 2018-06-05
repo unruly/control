@@ -5,9 +5,9 @@ import org.junit.Test;
 import java.util.Optional;
 import java.util.function.Function;
 
-import static co.unruly.control.result.Introducers.*;
 import static co.unruly.control.result.Match.match;
 import static co.unruly.control.result.Match.matchValue;
+import static co.unruly.control.result.Recover.*;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -42,7 +42,7 @@ public class MatchTest {
     public void canMatchOnTest() {
         Function<Integer, String> matchByType = match(
                 ifIs((Integer x) -> x % 2 == 0, x -> x + ", well, that's one of those even numbers"),
-                ifIs(x -> x < 0,                x -> x + " is one of those banker's negative number thingies")
+                ifIs(x -> x < 0, x -> x + " is one of those banker's negative number thingies")
         ).otherwise(x -> x + " is a regular, god-fearing number for god-fearing folks");
 
         assertThat(matchByType.apply(2), is("2, well, that's one of those even numbers"));
@@ -55,7 +55,7 @@ public class MatchTest {
     public void canMatchOnTestPassingArgument() {
         String matchByResult = matchValue(4,
                 ifIs((Integer x) -> x % 2 == 0, x -> x + ", well, that's one of those even numbers"),
-                ifIs(x -> x < 0,                x -> x + " is one of those banker's negative number thingies")
+                ifIs(x -> x < 0, x -> x + " is one of those banker's negative number thingies")
         ).otherwise(x -> x + " is a regular, god-fearing number for god-fearing folks");
 
         assertThat(matchByResult, is("4, well, that's one of those even numbers"));

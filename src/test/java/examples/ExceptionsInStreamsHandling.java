@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static co.unruly.control.result.Introducers.ifType;
+import static co.unruly.control.result.Recover.ifType;
 import static co.unruly.control.result.Introducers.tryTo;
 import static co.unruly.control.result.Resolvers.ifFailed;
 import static co.unruly.control.result.Transformers.*;
