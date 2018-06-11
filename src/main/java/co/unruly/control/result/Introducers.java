@@ -9,6 +9,8 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import static co.unruly.control.result.Result.failure;
+import static co.unruly.control.result.Result.success;
 import static co.unruly.control.result.Transformers.unwrapSuccesses;
 import static java.util.function.Function.identity;
 
@@ -37,6 +39,71 @@ public interface Introducers {
      */
     static <S, F> Function<Optional<S>, Result<S, F>> fromOptional(Supplier<F> onEmpty) {
         return maybe -> maybe.map(Result::<S, F>success).orElseGet(() -> Result.failure(onEmpty.get()));
+    }
+
+    /**
+     * Returns a function which takes a value and checks a predicate on it: if the predicate passes, then
+     * return a success of that value, otherwise apply the failure mapper to it
+     */
+    static <S, F> Function<S, Result<S, F>> ifFalse(Predicate<S> test, Function<S, F> failureMapper) {
+        return val -> test.test(val) ? Result.success(val) : Result.failure(failureMapper.apply(val));
+    }
+
+    /**
+     * Returns a function which takes a value and checks a predicate on it: if the predicate passes, then
+     * return a success of that value, otherwise return a failure of the provided value
+     */
+    static <S, F> Function<S, Result<S, F>> ifFalse(Predicate<S> test, F failureValue) {
+        return val -> test.test(val) ? Result.success(val) : Result.failure(failureValue);
+    }
+
+    /**
+     * Returns a function which takes a value, applies the given function to it, and returns a
+     * success of the returned value, unless it's null, when we return the given failure value
+     */
+    static <S, S1, F> Function<S, Result<S1, F>> ifNull(Function<S, S1> mapper, F failure) {
+        return input -> {
+            final S1 output = mapper.apply(input);
+            return output == null ? Result.failure(failure) : Result.success(output);
+        };
+    }
+
+    /**
+     * Returns a function which takes a value, applies the given function to it, and returns a
+     * success of the returned value, unless it's null, when we return a failure of the given
+     * function to the input value.
+     */
+    static <S, S1, F> Function<S, Result<S1, F>> ifNull(Function<S, S1> mapper, Function<S, F> failureMapper) {
+        return input -> {
+            final S1 output = mapper.apply(input);
+            return output == null ? Result.failure(failureMapper.apply(input)) : Result.success(output);
+        };
+    }
+
+    /**
+     * Returns a function which takes a value, applies the given function to it, and returns a success of
+     * the input unless the returned value matches the provided value. Otherwise, it returns a failure of the
+     * failure value provided.
+     *
+     * Note that the success path returns a success of the original value, not the result of applying this
+     * function. This can be used to build more complex predicates, or to check the return value of a
+     * consumer-with-return-code.
+     */
+    static <S, F, V> Function<S, Result<S, F>> ifYields(Function<S, V> checker, V value, F failure) {
+        return input -> checker.apply(input) == value ? Result.failure(failure) : Result.success(input);
+    }
+
+    /**
+     * Returns a function which takes a value, applies the given function to it, and returns a success of
+     * the input unless the returned value matches the provided value. Otherwise, it returns a failure of the
+     * input value applied to the failure mapping function.
+     *
+     * Note that the success path returns a success of the original value, not the result of applying this
+     * function. This can be used to build more complex predicates, or to check the return value of a
+     * consumer-with-return-code.
+     */
+    static <S, F, V> Function<S, Result<S, F>> ifYields(Function<S, V> checker, V value, Function<S, F> failureMapper) {
+        return input -> checker.apply(input) == value ? Result.failure(failureMapper.apply(input)) : Result.success(input);
     }
 
     /**
