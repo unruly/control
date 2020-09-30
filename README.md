@@ -4,6 +4,9 @@
 [![Release Version](https://img.shields.io/maven-central/v/co.unruly/control.svg)](https://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22co.unruly%22%20AND%20a%3A%22control%22)
 [![Javadocs](https://www.javadoc.io/badge/co.unruly/control.svg)](https://www.javadoc.io/doc/co.unruly/control)
 
+:warning: **This repo had been archived.  Development continues at https://github.com/writeoncereadmany/control** :warning:
+
+
 Control is a collection of functional control-flow primitives and utilities, built around a 
 [`Result`](https://javadoc.io/page/co.unruly/control/latest/co/unruly/control/result/Result.html) type.
 
